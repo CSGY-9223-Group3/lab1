@@ -15,7 +15,7 @@ class Test(TestCase):
         response = pastebin.read_note(note_id)
 
         self.assertEqual(response.status_code, expected_status_code)
-        self.assertEquals(response.data.decode("utf-8"), expected_response_body)
+        self.assertEqual(response.data.decode("utf-8"), expected_response_body)
 
     @parameterized.expand([
         ["notes empty", "test1", "notebody", 201, {}],

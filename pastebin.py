@@ -1,10 +1,15 @@
+import datetime
+
 from flask import Flask, Response, request
 import json
+
+import jwt
 
 app = Flask(__name__)
 
 
 notes = {}
+users = {}
 
 
 @app.route('/')
@@ -64,3 +69,30 @@ def delete_note(note_id):
     else:
         # note doesn't exist, return not found
         return Response(status=404)
+
+
+@app.route('/users', methods=["POST"])
+def create_user():
+    new_token = generate_bearer_token(request.data.decode("utf-8"))
+    users[request.data.decode("utf-8")] = new_token
+
+    return Response(new_token, status=200, mimetype='text/plain')
+
+
+@app.route('/users', methods=["GET"])
+def get_user():
+    return Response(json.dumps(users), status=200, mimetype='application/json')
+
+
+def generate_bearer_token(user_id):
+    try:
+        return jwt.encode(
+            {
+                "sub": user_id,
+                "exp": datetime.datetime.utcnow() + datetime.timedelta(days=1)
+            },
+            'secret',
+            algorithm='HS256'
+        )
+    except Exception as e:
+        return e

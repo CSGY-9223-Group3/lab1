@@ -1,12 +1,39 @@
 import datetime
-
 from flask import Flask, Response, request
 import json
 import logging
+from logging.config import dictConfig
+from functools import wraps
 import jwt
 
-from logging.config import dictConfig
+# In a production environment, this should be stored securely (e.g., as an environment variable)
+SECRET_KEY = 'cf4d68b60166f3e77fa11213797e2ee9ace4e813eead3fdbc522079ecee9beb2'
 
+# Define the token_required decorator
+def token_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        token = None
+        if 'Authorization' in request.headers:
+            auth_header = request.headers['Authorization']
+            try:
+                token = auth_header.split(" ")[1]
+            except IndexError:
+                return Response('Invalid token format', 401)
+        
+        if not token:
+            return Response('Token is missing', 401)
+        
+        try:
+            data = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+            current_user = data['sub']
+        except jwt.exceptions.InvalidTokenError:
+            return Response('Invalid token', 401)
+        
+        return f(current_user, *args, **kwargs)
+    return decorated
+
+# Configure logging
 dictConfig({
     'version': 1,
     'formatters': {'default': {
@@ -28,7 +55,6 @@ app = Flask(__name__)
 notes = {}
 users = {}
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -38,74 +64,40 @@ def hello():
 
 
 @app.route('/notes/<note_id>', methods=["GET"])
-def handle_read_note(note_id):
-    if validate_user(request):
-        user = request.authorization.username  # TODO - replace basic auth user with bearer token user
-        return read_note(note_id, user)
-    else:
-        # user not known, return unauthorized
-        logger.warning("Unknown user attempted to read note '{note_id}'".format(note_id=note_id))
-        return Response(status=401)
+@token_required
+def handle_read_note(current_user, note_id):
+    return read_note(note_id, current_user)
 
 
 @app.route('/notes/<note_id>', methods=["POST"])
-def handle_create_note(note_id):
-    if validate_user(request):
-        user = request.authorization.username  # TODO - replace basic auth user with bearer token user
-        # check if public or private note
-        is_public = request.args.get('public', default=False, type=is_true)
-        return create_note(note_id, user, request.data.decode("utf-8"), is_public)
-    else:
-        # user not known, return unauthorized
-        logger.warning("Unknown user attempted to write note '{note_id}'".format(note_id=note_id))
-        return Response(status=401)
+@token_required
+def handle_create_note(current_user, note_id):
+    is_public = request.args.get('public', default=False, type=is_true)
+    return create_note(note_id, current_user, request.data.decode("utf-8"), is_public)
 
 
 @app.route('/notes/<note_id>', methods=["PUT"])
-def handle_update_note(note_id):
-    if validate_user(request):
-        user = request.authorization.username  # TODO - replace basic auth user with bearer token user
-        update_note(note_id, user, request.data.decode("utf-8"))
-    else:
-        # user not known, return unauthorized
-        logger.warning("Unknown user attempted to update note '{note_id}'".format(note_id=note_id))
-        return Response(status=401)
+@token_required
+def handle_update_note(current_user, note_id):
+    return update_note(note_id, current_user, request.data.decode("utf-8"))
 
 
 @app.route('/notes/<note_id>', methods=["DELETE"])
-def handle_delete_note(note_id):
-    if validate_user(request):
-        user = request.authorization.username  # TODO - replace basic auth user with bearer token user
-        delete_note(note_id, user)
-    else:
-        # user not known, return unauthorized
-        logger.warning("Unknown user attempted to read delete '{note_id}'".format(note_id=note_id))
-        return Response(status=401)
+@token_required
+def handle_delete_note(current_user, note_id):
+    return delete_note(note_id, current_user)
 
 
 @app.route('/users', methods=["POST"])
 def handle_create_user():
     new_token = generate_bearer_token(request.data.decode("utf-8"))
     users[request.data.decode("utf-8")] = new_token
-
     logger.info("Created user {user}".format(user=request.data.decode("utf-8")))
     return Response(new_token, status=200, mimetype='text/plain')
-
 
 @app.route('/users', methods=["GET"])
 def handle_get_user():
     return Response(json.dumps(users), status=200, mimetype='application/json')
-
-
-# check if auth is provided and user exists
-def validate_user(request):
-    # TODO - update this function to look at bearer token instead of basic auth
-    if (request.authorization and
-            request.authorization.username and
-            request.authorization.username in users):
-        return True
-    return False
-
 
 # check if user is allowed to view the note
 def can_user_read(user, note_id):
@@ -208,13 +200,15 @@ def delete_note(note_id, user):
 
 def generate_bearer_token(user_id):
     try:
-        return jwt.encode(
+        token = jwt.encode(
             {
                 "sub": user_id,
                 "exp": datetime.datetime.utcnow() + datetime.timedelta(days=1)
             },
-            'secret',
+            SECRET_KEY,
             algorithm='HS256'
         )
+        return token
     except Exception as e:
-        return e
+        return str(e)
+

@@ -14,6 +14,13 @@ This is a simple Pastebin application built with Flask.
     virtualenv venv
     source venv/bin/activate
     ```
+
+    On Windows, run:
+
+    ```
+    .venv\Scripts\activate
+    ```
+
 4. Install the required dependencies:
     ```sh
     pip install -r requirements.txt

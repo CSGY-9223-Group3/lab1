@@ -27,7 +27,7 @@ This repository follows the best security practices outlined below:
    - Use `.gitignore` to prevent committing sensitive files.
    - Refer to [Best Practices for Secrets Management](https://docs.github.com/en/actions/security-guides/encrypted-secrets).
 
-4. ❌ **SSH for Authentication**:
+4. ✔ **SSH for Authentication**:
    - Use SSH keys for secure access to the repository instead of HTTPS.
    - Reference: [GitHub Docs on SSH Key Generation](https://docs.github.com/en/authentication/connecting-to-github-with-ssh).
 
@@ -41,19 +41,19 @@ This repository follows the best security practices outlined below:
    - Reference: [GitHub Docs on Signing Commits](https://docs.github.com/en/authentication/managing-commit-signature-verification/signing-commits).
    - Created a branch rule that requires signed commits for all branches
 
-7. ❌ **Static Code Analysis**:
+7. ✔ **Static Code Analysis**:
    - We use tools like Black, Ruff, and Flake8 to maintain code quality and catch syntax errors.
    - Reference: [Using Python Linters](https://black.readthedocs.io/en/stable/).
 
-8. ❌ **Secret Scanning**:
+8. ✔ **Secret Scanning**:
    - We have enabled GitHub’s Secret Scanning feature to detect if sensitive information gets committed.
    - Reference: [GitHub Docs on Secret Scanning](https://docs.github.com/en/code-security/secret-scanning/about-secret-scanning).
 
-9. ❌ **Container Security**:
-   - We follow Docker security best practices, ensuring that containers run with the least privileges necessary.  
+9. ✔ **Container Security**:
+   - We follow Docker security best practices as relevant to our project, ensuring that containers run with the least privileges necessary.  
    - Reference: [Docker Security Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Docker_Security_Cheat_Sheet.html).
 
-10. ❌ **Testing**:
+10. ✔ **Testing**:
    - Unit and integration tests are encouraged to improve security and functionality.
    - We use GitHub Codespaces for consistent development environments.
 

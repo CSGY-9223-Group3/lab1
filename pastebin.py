@@ -3,13 +3,16 @@ import json
 import logging
 from functools import wraps
 from logging.config import dictConfig
+import os
+
 
 import jwt
 from flask import Flask, Response, request
 
-# In a production environment, this should be stored securely (e.g., as an environment variable)
-SECRET_KEY = 'cf4d68b60166f3e77fa11213797e2ee9ace4e813eead3fdbc522079ecee9beb2'
-
+try:
+    SECRET_KEY = os.environ['SECRET_KEY']
+except KeyError:
+    raise ValueError("No SECRET_KEY set for Flask application. This is required.")
 
 # Define the token_required decorator
 def token_required(f):

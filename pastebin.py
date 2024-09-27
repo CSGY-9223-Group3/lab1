@@ -110,8 +110,9 @@ def handle_create_user():
 
 @app.route("/users", methods=["GET"])
 def handle_get_user():
-    return Response(json.dumps(users), status=200, mimetype="application/json")
-
+    # Create a new dictionary with only non-sensitive user data
+    safe_user_data = {user_id: {"id": user_id} for user_id in users.keys()}
+    return Response(json.dumps(safe_user_data), status=200, mimetype="application/json")
 
 # check if user is allowed to view the note
 def can_user_read(user, note_id):

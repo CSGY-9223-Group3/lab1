@@ -7,12 +7,15 @@ from logging.config import dictConfig
 
 import jwt
 from flask import Flask, Response, request
+from html_sanitizer import Sanitizer
 
 try:
     SECRET_KEY = os.environ["SECRET_KEY"]
 except KeyError:
     raise ValueError("No SECRET_KEY set for Flask application. This is required.")
 
+# Initialize the HTML sanitizer
+sanitizer = Sanitizer()
 
 # Define the token_required decorator
 def token_required(f):
@@ -38,7 +41,6 @@ def token_required(f):
         return f(current_user, *args, **kwargs)
 
     return decorated
-
 
 # Configure logging
 dictConfig(
@@ -165,9 +167,10 @@ def read_note(note_id, user):
 
 def create_note(note_id, user, data, is_public):
     if note_id not in notes:
-        # no existing note found, create
+        # Sanitize the input data
+        sanitized_data = sanitizer.sanitize(data)
 
-        notes[note_id] = {"text": data, "author": user, "isPublic": is_public}
+        notes[note_id] = {"text": sanitized_data, "author": user, "isPublic": is_public}
 
         logger.info(
             "User '{user}' created note '{note_id}'".format(user=user, note_id=note_id)
@@ -187,10 +190,11 @@ def create_note(note_id, user, data, is_public):
 
 def update_note(note_id, user, data):
     if note_id in notes:
-        # existing note found, update
-
         if can_user_modify(user, note_id):
-            notes[note_id]["text"] = data
+            # Sanitize the input data
+            sanitized_data = sanitizer.sanitize(data)
+
+            notes[note_id]["text"] = sanitized_data
 
             logger.info(
                 "User '{user}' updated note '{note_id}'".format(

@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Register - Internal Pastebin{% endblock %}
+{% block content %}
+<h2>Register</h2>
+<form method="POST">
+    {{ form.hidden_tag() }}
+    <p>
+        {{ form.user_id.label }}<br>
+        {{ form.user_id(size=32) }}
+        {% for error in form.user_id.errors %}
+            <span class="error">{{ error }}</span>
+        {% endfor %}
+    </p>
+    <p>
+        {{ form.password.label }}<br>
+        {{ form.password(size=32) }}
+        {% for error in form.password.errors %}
+            <span class="error">{{ error }}</span>
+        {% endfor %}
+    </p>
+    <p>{{ form.submit() }}</p>
+</form>
+{% endblock %}

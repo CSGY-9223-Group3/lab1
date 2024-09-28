@@ -68,6 +68,7 @@ users = {}
 # Authentication Decorators
 # ----------------------------
 
+
 def token_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
@@ -94,51 +95,61 @@ def token_required(f):
 
     return decorated
 
+
 def login_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
-        if 'user_id' not in session:
+        if "user_id" not in session:
             flash("Please log in to access this page.", "warning")
-            return redirect(url_for('login'))
-        return f(session['user_id'], *args, **kwargs)
+            return redirect(url_for("login"))
+        return f(session["user_id"], *args, **kwargs)
+
     return decorated
+
 
 # ----------------------------
 # Flask-WTF Forms
 # ----------------------------
 
+
 class RegistrationForm(FlaskForm):
-    user_id = StringField('User ID', validators=[DataRequired(), Length(min=3, max=25)])
-    password = PasswordField('Password', validators=[DataRequired(), Length(min=6)])
-    submit = SubmitField('Register')
+    user_id = StringField("User ID", validators=[DataRequired(), Length(min=3, max=25)])
+    password = PasswordField("Password", validators=[DataRequired(), Length(min=6)])
+    submit = SubmitField("Register")
 
     def validate_user_id(self, field):
         if field.data in users:
-            raise ValidationError('User ID already exists.')
+            raise ValidationError("User ID already exists.")
+
 
 class LoginForm(FlaskForm):
-    user_id = StringField('User ID', validators=[DataRequired()])
-    password = PasswordField('Password', validators=[DataRequired()])
-    submit = SubmitField('Login')
+    user_id = StringField("User ID", validators=[DataRequired()])
+    password = PasswordField("Password", validators=[DataRequired()])
+    submit = SubmitField("Login")
+
 
 class NoteForm(FlaskForm):
-    note_id = StringField('Note ID', validators=[DataRequired(), Length(min=1, max=50)])
-    text = TextAreaField('Note Text', validators=[DataRequired()])
-    is_public = BooleanField('Public')
-    submit = SubmitField('Submit')
+    note_id = StringField("Note ID", validators=[DataRequired(), Length(min=1, max=50)])
+    text = TextAreaField("Note Text", validators=[DataRequired()])
+    is_public = BooleanField("Public")
+    submit = SubmitField("Submit")
+
 
 class EditNoteForm(FlaskForm):
-    text = TextAreaField('Note Text', validators=[DataRequired()])
-    is_public = BooleanField('Public')
-    submit = SubmitField('Update')
+    text = TextAreaField("Note Text", validators=[DataRequired()])
+    is_public = BooleanField("Public")
+    submit = SubmitField("Update")
+
 
 # ----------------------------
 # Helper Functions
 # ----------------------------
 
+
 def generate_api_key():
     """Generate a secure API key."""
     return secrets.token_urlsafe(32)
+
 
 def generate_jwt_token(user_id):
     """Generate a JWT token for the user."""
@@ -158,27 +169,33 @@ def generate_jwt_token(user_id):
         logger.error(f"Error generating token: {e}")
         return None
 
+
 def can_user_read(user, note_id):
     """Check if the user can read the note."""
     if notes[note_id]["isPublic"] or user == notes[note_id]["author"]:
         return True
     return False
 
+
 def can_user_modify(user, note_id):
     """Check if the user can modify the note."""
     return user == notes[note_id]["author"]
+
 
 def sanitize_input(data):
     """Sanitize user input to prevent XSS."""
     return sanitizer.sanitize(data)
 
+
 # ----------------------------
 # Routes
 # ----------------------------
 
+
 @app.route("/")
 def home():
     return render_template("home.html")
+
 
 # User Registration
 @app.route("/register", methods=["GET", "POST"])
@@ -194,14 +211,15 @@ def register():
         # Store user
         users[user_id] = {
             "password": password,  # Store hashed password in production
-            "api_key": api_key
+            "api_key": api_key,
         }
 
         logger.info(f"Registered new user '{user_id}'")
 
         flash("Registration successful! Please log in.", "success")
-        return redirect(url_for('login'))
+        return redirect(url_for("login"))
     return render_template("register.html", form=form)
+
 
 # User Login
 @app.route("/login", methods=["GET", "POST"])
@@ -214,21 +232,23 @@ def login():
         user = users.get(user_id)
         if user and user["password"] == password:
             # Successful login
-            session['user_id'] = user_id
-            session['api_key'] = user["api_key"]
+            session["user_id"] = user_id
+            session["api_key"] = user["api_key"]
             flash("Logged in successfully!", "success")
-            return redirect(url_for('list_notes'))
+            return redirect(url_for("list_notes"))
         else:
             flash("Invalid credentials.", "danger")
     return render_template("login.html", form=form)
 
+
 # User Logout
 @app.route("/logout")
 def logout():
-    session.pop('user_id', None)
-    session.pop('api_key', None)
+    session.pop("user_id", None)
+    session.pop("api_key", None)
     flash("Logged out successfully!", "success")
-    return redirect(url_for('home'))
+    return redirect(url_for("home"))
+
 
 # List Notes
 @app.route("/notes")
@@ -237,13 +257,16 @@ def list_notes(current_user):
     user_notes = []
     for note_id, note in notes.items():
         if can_user_read(current_user, note_id):
-            user_notes.append({
-                "id": note_id,
-                "text": note["text"],
-                "author": note["author"],
-                "isPublic": note["isPublic"],
-            })
+            user_notes.append(
+                {
+                    "id": note_id,
+                    "text": note["text"],
+                    "author": note["author"],
+                    "isPublic": note["isPublic"],
+                }
+            )
     return render_template("notes.html", notes=user_notes, user=current_user)
+
 
 # Create Note
 @app.route("/notes/create", methods=["GET", "POST"])
@@ -270,8 +293,9 @@ def create_note_route(current_user):
         logger.info(f"User '{current_user}' created note '{note_id}'")
 
         flash("Note created successfully!", "success")
-        return redirect(url_for('list_notes'))
+        return redirect(url_for("list_notes"))
     return render_template("create_note.html", form=form)
+
 
 # View Note
 @app.route("/notes/<note_id>")
@@ -280,18 +304,22 @@ def view_note_route(current_user, note_id):
     note = notes.get(note_id)
     if note:
         if can_user_read(current_user, note_id):
-            return render_template("view_note.html", note={
-                "id": note_id,
-                "text": note["text"],
-                "author": note["author"],
-                "isPublic": note["isPublic"],
-            })
+            return render_template(
+                "view_note.html",
+                note={
+                    "id": note_id,
+                    "text": note["text"],
+                    "author": note["author"],
+                    "isPublic": note["isPublic"],
+                },
+            )
         else:
             flash("You are not authorized to view this note.", "danger")
-            return redirect(url_for('list_notes'))
+            return redirect(url_for("list_notes"))
     else:
         flash("Note not found.", "warning")
-        return redirect(url_for('list_notes'))
+        return redirect(url_for("list_notes"))
+
 
 # Edit Note
 @app.route("/notes/<note_id>/edit", methods=["GET", "POST"])
@@ -300,10 +328,10 @@ def edit_note_route(current_user, note_id):
     note = notes.get(note_id)
     if not note:
         flash("Note not found.", "warning")
-        return redirect(url_for('list_notes'))
+        return redirect(url_for("list_notes"))
     if not can_user_modify(current_user, note_id):
         flash("You are not authorized to edit this note.", "danger")
-        return redirect(url_for('list_notes'))
+        return redirect(url_for("list_notes"))
 
     form = EditNoteForm()
     if form.validate_on_submit():
@@ -318,11 +346,12 @@ def edit_note_route(current_user, note_id):
         logger.info(f"User '{current_user}' updated note '{note_id}'")
 
         flash("Note updated successfully!", "success")
-        return redirect(url_for('view_note_route', note_id=note_id))
+        return redirect(url_for("view_note_route", note_id=note_id))
     elif request.method == "GET":
         form.text.data = note["text"]
         form.is_public.data = note["isPublic"]
     return render_template("edit_note.html", form=form, note_id=note_id)
+
 
 # Delete Note
 @app.route("/notes/<note_id>/delete", methods=["POST"])
@@ -331,21 +360,23 @@ def delete_note_route(current_user, note_id):
     note = notes.get(note_id)
     if not note:
         flash("Note not found.", "warning")
-        return redirect(url_for('list_notes'))
+        return redirect(url_for("list_notes"))
     if not can_user_modify(current_user, note_id):
         flash("You are not authorized to delete this note.", "danger")
-        return redirect(url_for('list_notes'))
+        return redirect(url_for("list_notes"))
 
     del notes[note_id]
 
     logger.info(f"User '{current_user}' deleted note '{note_id}'")
 
     flash("Note deleted successfully!", "success")
-    return redirect(url_for('list_notes'))
+    return redirect(url_for("list_notes"))
+
 
 # ----------------------------
 # API Routes
 # ----------------------------
+
 
 # Create Note via API
 @app.route("/api/notes", methods=["POST"])
@@ -375,7 +406,10 @@ def api_create_note(current_user):
 
     logger.info(f"User '{current_user}' created note '{note_id}' via API")
 
-    return Response(json.dumps({"id": note_id}), status=201, mimetype="application/json")
+    return Response(
+        json.dumps({"id": note_id}), status=201, mimetype="application/json"
+    )
+
 
 # Read Note via API
 @app.route("/api/notes/<note_id>", methods=["GET"])
@@ -393,11 +427,16 @@ def api_read_note(current_user, note_id):
             logger.info(f"User '{current_user}' read note '{note_id}' via API")
             return Response(json.dumps(resp), status=200, mimetype="application/json")
         else:
-            logger.warning(f"User '{current_user}' unauthorized to read note '{note_id}' via API")
+            logger.warning(
+                f"User '{current_user}' unauthorized to read note '{note_id}' via API"
+            )
             return Response("Forbidden", status=403)
     else:
-        logger.info(f"User '{current_user}' attempted to read non-existent note '{note_id}' via API")
+        logger.info(
+            f"User '{current_user}' attempted to read non-existent note '{note_id}' via API"
+        )
         return Response("Not Found", status=404)
+
 
 # Update Note via API
 @app.route("/api/notes/<note_id>", methods=["PUT"])
@@ -426,7 +465,10 @@ def api_update_note(current_user, note_id):
 
     logger.info(f"User '{current_user}' updated note '{note_id}' via API")
 
-    return Response(json.dumps({"id": note_id}), status=200, mimetype="application/json")
+    return Response(
+        json.dumps({"id": note_id}), status=200, mimetype="application/json"
+    )
+
 
 # Delete Note via API
 @app.route("/api/notes/<note_id>", methods=["DELETE"])
@@ -442,7 +484,10 @@ def api_delete_note(current_user, note_id):
 
     logger.info(f"User '{current_user}' deleted note '{note_id}' via API")
 
-    return Response(json.dumps({"id": note_id}), status=200, mimetype="application/json")
+    return Response(
+        json.dumps({"id": note_id}), status=200, mimetype="application/json"
+    )
+
 
 # List Public Notes via API
 @app.route("/api/notes", methods=["GET"])
@@ -455,9 +500,11 @@ def api_list_notes(current_user):
             "author": note["author"],
             "isPublic": note["isPublic"],
         }
-        for nid, note in notes.items() if note["isPublic"] or note["author"] == current_user
+        for nid, note in notes.items()
+        if note["isPublic"] or note["author"] == current_user
     ]
     return Response(json.dumps(public_notes), status=200, mimetype="application/json")
+
 
 # User Registration via API
 @app.route("/api/register", methods=["POST"])
@@ -476,14 +523,14 @@ def api_register():
         return Response("User ID already exists", status=409)
 
     api_key = generate_api_key()
-    users[user_id] = {
-        "password": password,  # Hash in production
-        "api_key": api_key
-    }
+    users[user_id] = {"password": password, "api_key": api_key}  # Hash in production
 
     logger.info(f"Registered new user '{user_id}' via API")
 
-    return Response(json.dumps({"api_key": api_key}), status=201, mimetype="application/json")
+    return Response(
+        json.dumps({"api_key": api_key}), status=201, mimetype="application/json"
+    )
+
 
 # User Login via API
 @app.route("/api/login", methods=["POST"])
@@ -503,11 +550,14 @@ def api_login():
         token = generate_jwt_token(user_id)
         if token:
             logger.info(f"User '{user_id}' logged in via API")
-            return Response(json.dumps({"token": token}), status=200, mimetype="application/json")
+            return Response(
+                json.dumps({"token": token}), status=200, mimetype="application/json"
+            )
         else:
             return Response("Token generation failed", status=500)
     else:
         return Response("Invalid credentials", status=401)
+
 
 # Get User Info via API
 @app.route("/api/users/<user_id>", methods=["GET"])
@@ -517,11 +567,14 @@ def api_get_user(current_user, user_id):
     if user:
         safe_user_data = {
             "user_id": user_id,
-            "api_key": user["api_key"]  # In production, do NOT expose API keys
+            "api_key": user["api_key"],  # In production, do NOT expose API keys
         }
-        return Response(json.dumps(safe_user_data), status=200, mimetype="application/json")
+        return Response(
+            json.dumps(safe_user_data), status=200, mimetype="application/json"
+        )
     else:
         return Response("User not found", status=404)
+
 
 # ----------------------------
 # Run the Application

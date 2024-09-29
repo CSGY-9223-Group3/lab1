@@ -202,7 +202,7 @@ def home():
 def register():
     form = RegistrationForm()
     if form.validate_on_submit():
-        user_id = form.user_id.data
+        user_id = sanitize_input(form.user_id.data)
         password = form.password.data  # In production, hash the password
 
         # Generate API key
@@ -226,7 +226,7 @@ def register():
 def login():
     form = LoginForm()
     if form.validate_on_submit():
-        user_id = form.user_id.data
+        user_id = sanitize_input(form.user_id.data)
         password = form.password.data
 
         user = users.get(user_id)
@@ -513,7 +513,7 @@ def api_register():
     if not data:
         return Response("Invalid JSON data", status=400)
 
-    user_id = data.get("user_id")
+    user_id = sanitize_input(data.get("user_id"))
     password = data.get("password")
 
     if not user_id or not password:
@@ -539,7 +539,7 @@ def api_login():
     if not data:
         return Response("Invalid JSON data", status=400)
 
-    user_id = data.get("user_id")
+    user_id = sanitize_input(data.get("user_id"))
     password = data.get("password")
 
     if not user_id or not password:
@@ -564,13 +564,13 @@ def api_login():
 @token_required
 def api_get_user(current_user, user_id):
     if current_user != user_id:
-        return Response("Forbidden", status=403)    
+        return Response("Forbidden", status=403)
 
     user = users.get(user_id)
     if user:
         safe_user_data = {
             "user_id": user_id,
-            # "api_key": user["api_key"], 
+            # "api_key": user["api_key"],
         }
         return Response(
             json.dumps(safe_user_data), status=200, mimetype="application/json"

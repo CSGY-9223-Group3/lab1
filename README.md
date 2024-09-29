@@ -24,9 +24,10 @@ This is a simple Pastebin application built with Flask, containerized using Dock
 
     ```env
     FLASK_APP=pastebin
-    FLASK_ENV=development
+    FLASK_DEBUG=True
     SECRET_KEY=your_secret_key
     ```
+    An example file is also available for demonstration purposes, `.env_file_example`. Flask debug, True for dev and False for otherwise.
 
 3. **Build and Start the Application:**
 

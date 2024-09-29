@@ -1,5 +1,5 @@
 # Stage 1: Builder
-FROM python:3.8-slim-buster AS builder
+FROM python:3.9-slim-buster AS builder
 
 # Create a non-root user for enhanced security
 RUN groupadd -r appuser && useradd -r -g appuser appuser
@@ -10,7 +10,7 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Stage 2: Final Image
-FROM python:3.8-slim-buster
+FROM python:3.9-slim-buster
 
 # Create a non-root user in the final image
 RUN groupadd -r appuser && useradd -r -g appuser appuser
@@ -22,8 +22,8 @@ WORKDIR /app
 COPY . .
 
 # Set filesystem permissions for security
-RUN chmod -R a-w /usr/local/lib/python3.8 && \
-    chmod -R a-w /usr/local/lib/python3.8/site-packages
+RUN chmod -R a-w /usr/local/lib/python3.9 && \
+    chmod -R a-w /usr/local/lib/python3.9/site-packages
 
 # Switch to non-root user
 USER appuser

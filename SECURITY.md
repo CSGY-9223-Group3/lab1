@@ -22,7 +22,7 @@ This repository follows the best security practices outlined below:
    - Reference: [Secure your GitHub Organization with 2FA](https://docs.github.com/en/authentication/securing-your-account-with-two-factor-authentication-2fa/about-two-factor-authentication).
    - Enforced 2FA in the GitHub organization
 
-3. ❌ **Secure Version Control Practices**:
+3. ✔ **Secure Version Control Practices**:
    - No sensitive information such as API keys, passwords, or environment variables should be committed to the repository.
    - Use `.gitignore` to prevent committing sensitive files.
    - Refer to [Best Practices for Secrets Management](https://docs.github.com/en/actions/security-guides/encrypted-secrets).

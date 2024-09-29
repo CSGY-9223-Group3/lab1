@@ -1,2 +1,0 @@
-FLASK_APP=pastebin
-FLASK_ENV=development

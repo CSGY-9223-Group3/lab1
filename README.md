@@ -1,15 +1,63 @@
 # Lab 1: Pastebin Application
 
-This is a simple Pastebin application built with Flask.
+This is a simple Pastebin application built with Flask, containerized using Docker and orchestrated with Docker Compose.
 
-## Setup
+## Prerequisites
 
-1. Install Python 3.
-2. Install `virtualenv`:
+- [Docker](https://www.docker.com/get-started) installed on your system.
+- [Docker Compose](https://docs.docker.com/compose/install/) installed.
+
+## Setup and Running the Application
+
+### Using Docker Compose
+
+1. **Clone the Repository:**
+
+    ```sh
+    git clone <repository_url>
+    cd <repository_directory>
+    ```
+
+2. **Create a `.env_file`:**
+
+    Ensure you have a `.env_file` in the project root with the necessary environment variables. Example:
+
+    ```env
+    FLASK_APP=pastebin
+    FLASK_ENV=development
+    SECRET_KEY=your_secret_key
+    ```
+
+3. **Build and Start the Application:**
+
+    ```sh
+    docker-compose up --build
+    ```
+
+    This command builds the Docker image and starts the Pastebin service. The application will be accessible at [http://localhost:5000](http://localhost:5000).
+
+4. **Stopping the Application:**
+
+    Press `Ctrl+C` in the terminal where `docker-compose` is running, then execute:
+
+    ```sh
+    docker-compose down
+    ```
+
+### Without Docker (Optional)
+
+If you prefer to run the application without Docker, follow these steps:
+
+1. **Install Python 3.**
+
+2. **Install `virtualenv`:**
+
     ```sh
     pip install virtualenv
     ```
-3. Create and activate a virtual environment:
+
+3. **Create and Activate a Virtual Environment:**
+
     ```sh
     virtualenv venv
     source venv/bin/activate
@@ -17,32 +65,38 @@ This is a simple Pastebin application built with Flask.
 
     On Windows, run:
 
-    ```
+    ```sh
     .venv\Scripts\activate
     ```
 
-4. Install the required dependencies:
+4. **Install the Required Dependencies:**
+
     ```sh
     pip install -r requirements.txt
     ```
 
-## Run
+5. **Set Environment Variables from `.env_file`:**
 
-To run the application, use the following command:
+    ```sh
+    export $(cat .env_file | xargs)
+    ```
+
+6. **Run the Flask Application:**
+
+    ```sh
+    flask --env-file .env_file run
+    ```
+
+## Running the Application
+
+### Using Docker Compose
+
+To start the application with Docker Compose:
+
 ```sh
-flask --env-file env_file run
+docker-compose up
 ```
-**OR**
 
-```
-flask -e env_file run
-```
-## Testing
-
-To run the tests, use the following command:
-```sh
-pytest
-```
 
 ## Contributing
 
@@ -54,4 +108,5 @@ For more details on secure coding practices, please refer to the [OWASP Develope
 
 ## Additional Documentation
 
-- [INSTRUCTIONS.md](INSTRUCTIONS.md)
+- [LAB INSTRUCTIONS.md](INSTRUCTIONS.md)
+

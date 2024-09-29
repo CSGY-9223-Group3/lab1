@@ -7,10 +7,19 @@ We appreciate your interest in contributing to the project. Please follow these 
 1. **Fork the Repository**: Start by forking the repository to your own GitHub account.
 2. **Clone via SSH**: Always clone the repository using SSH instead of HTTPS for better security.  
    Reference: [GitHub Docs on SSH Key Generation](https://docs.github.com/en/authentication/connecting-to-github-with-ssh).
+   ```   
+      git clone <repository_url>
+      cd <repository_directory>
+   ```
 
 3. **Set Up Your Development Environment**:
    - Ensure that your environment is configured securely. Use environment variables for sensitive data, and do not hardcode secrets into the code.
    - Reference: [Best Practices for Secrets Management](https://docs.github.com/en/actions/security-guides/encrypted-secrets).
+   - Create a `.env_file` in the project root with the necessary environment variables
+   ```
+   FLASK_ENV=development
+   SECRET_KEY=your_secret_key
+   ```
 
 4. **Create a Feature Branch**: Work on your feature or bug fix in a separate branch from `main` (`git checkout -b feature/new-feature-name`).
 

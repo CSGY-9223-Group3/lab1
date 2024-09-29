@@ -563,11 +563,14 @@ def api_login():
 @app.route("/api/users/<user_id>", methods=["GET"])
 @token_required
 def api_get_user(current_user, user_id):
+    if current_user != user_id:
+        return Response("Forbidden", status=403)    
+
     user = users.get(user_id)
     if user:
         safe_user_data = {
             "user_id": user_id,
-            "api_key": user["api_key"],  # In production, do NOT expose API keys
+            # "api_key": user["api_key"], 
         }
         return Response(
             json.dumps(safe_user_data), status=200, mimetype="application/json"

@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Home - Internal Pastebin{% endblock %}
+{% block content %}
+<h1>Welcome to the Internal Pastebin</h1>
+{% if session.get('user_id') %}
+    <p>Hello, {{ session.get('user_id') }}! <a href="{{ url_for('list_notes') }}">View your notes</a>.</p>
+{% else %}
+    <p>Please <a href="{{ url_for('login') }}">log in</a> or <a href="{{ url_for('register') }}">register</a> to manage your notes.</p>
+{% endif %}
+{% endblock %}

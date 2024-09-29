@@ -1,0 +1,47 @@
+version: '3.8'  # Specify the Docker Compose version
+
+services:
+  pastebin: 
+    user: appuser  # Rule 2. Run as a non-root user     
+    build:
+      context: . 
+      dockerfile: Dockerfile
+    env_file:
+      - .env_file
+    ports:
+      - "5000:5000"
+    volumes:
+      - .:/app:ro  # Mount the current directory to /app in the container as read-only
+    restart: unless-stopped
+    
+    # Rule 7. Resource Limits
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"       # Limit container to 50% of a CPU
+          memory: "512M"    # Limit container memory to 512MB
+
+    # Rule 8. Read-Only Filesystem
+    read_only: true  # Mount the container's filesystem as read-only
+
+    # Rule 3. Drop All Capabilities
+    cap_drop:
+      - ALL
+
+    # Rule 4. Prevent the container from gaining new privileges
+    security_opt:
+      - no-new-privileges:true
+
+
+    # 8. Logging Configuration
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+
+# Network Configuration
+networks:
+  pastebin_network:
+    driver: bridge

@@ -28,8 +28,11 @@ RUN chmod -R a-w /usr/local/lib/python3.8 && \
 # Switch to non-root user
 USER appuser
 
+# Expose port 5000
+EXPOSE 5000
+
 # Run the application
-CMD ["python", "pastebin.py"]
+CMD ["flask", "run", "--host=0.0.0.0"]
 
 # Note: This Dockerfile implements several security measures.
 # For full details on security practices, please refer to SECURITY.md

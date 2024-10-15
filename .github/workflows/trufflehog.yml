@@ -1,0 +1,2 @@
+- name: TruffleHog Secret Scan
+  uses: trufflesecurity/trufflehog-actions-scan@v3

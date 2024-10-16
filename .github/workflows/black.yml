@@ -24,5 +24,8 @@ jobs:
           git add .
           git diff --cached --exit-code || git commit -m "Auto-format Python code with black"
       - name: Push changes
+        env:
+          PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
+          git remote set-url origin https://x-access-token:${{ secrets.PAT_TOKEN }}@github.com/${{ github.repository }}.git
           git push

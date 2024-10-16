@@ -22,6 +22,7 @@ PyJWT==2.9.0
 pytest==7.4.4
 python-dotenv==0.21.1
 tomli==2.0.1
+in-toto==3.0.0
 typing_extensions==4.7.1
 Werkzeug==2.2.3
 zipp==3.15.0

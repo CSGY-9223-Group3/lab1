@@ -1,0 +1,40 @@
+name: CI Pipeline with in-toto Attestation
+
+on: [push, pull_request]
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-attest:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Set Up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Set Up in-toto Key
+        run: |
+          echo "${{ secrets.IN_TOTO_PRIVATE_KEY }}" > ci-builder.key
+          chmod 600 ci-builder.key
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install in-toto
+
+      - name: Build with in-toto Attestation
+        run: |
+          n-toto-run --step-name build --materials . --products docker-image.tar --signing-key ci-builder.key -- \ 
+          bash -c "docker build -t pastebin:latest . && docker save pastebin:latest -o docker-image.tar"
+
+      - name: Upload Build Artifacts and Attestation
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-artifacts
+          path: |
+            docker-image.tar
+            build.link

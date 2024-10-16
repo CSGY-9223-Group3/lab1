@@ -40,4 +40,4 @@ jobs:
       - name: Push changes
         if: "!startsWith(github.ref, 'refs/heads/develop')"
         run: |
-          git push
+          git push origin HEAD:${{ github.ref }}

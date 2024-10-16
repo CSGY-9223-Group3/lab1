@@ -26,13 +26,10 @@ step_build.pubkeys = [functionary.public_key.keyid]
 step_build.expected_command = [
     "bash",
     "-c",
-    "docker build -t pastebin:latest . && docker save pastebin:latest -o docker-image.tar"
+    "docker build -t pastebin:latest . && docker save pastebin:latest -o docker-image.tar",
 ]
 step_build.expected_materials = [["ALLOW", "*"]]
-step_build.expected_products = [
-    ["CREATE", "docker-image.tar"],
-    ["DISALLOW", "*"]
-]
+step_build.expected_products = [["CREATE", "docker-image.tar"], ["DISALLOW", "*"]]
 
 # Add the step to the layout
 layout.steps.append(step_build)

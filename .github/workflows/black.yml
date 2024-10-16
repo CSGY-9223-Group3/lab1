@@ -38,5 +38,6 @@ jobs:
 
       # Push changes using the PAT token
       - name: Push changes
+        if: "!startsWith(github.ref, 'refs/heads/develop')"
         run: |
           git push

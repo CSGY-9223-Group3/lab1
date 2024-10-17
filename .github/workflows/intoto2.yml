@@ -15,6 +15,11 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
+      - name: Set Lowercase Variables
+        run: |
+          echo "LOWERCASE_OWNER=$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+          echo "IMAGE_NAME=lab1" >> $GITHUB_ENV
+
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
@@ -33,7 +38,7 @@ jobs:
 
       - name: Build Docker Image
         run: |
-          docker build -t ghcr.io/${{ github.repository_owner }}/${{ github.repository }}:latest .
+          docker build -t ghcr.io/${{ env.LOWERCASE_OWNER }}/${{ env.IMAGE_NAME }}:latest .
 
       - name: Generate SLSA Provenance Attestation
         run: |
@@ -52,4 +57,4 @@ jobs:
       - name: Push Docker Image
         run: |
           echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.repository_owner }} --password-stdin
-          docker push ghcr.io/${{ github.repository_owner }}/${{ github.repository }}:latest
+          docker push ghcr.io/${{ env.LOWERCASE_OWNER }}/${{ env.IMAGE_NAME }}:latest

@@ -44,12 +44,11 @@ jobs:
           context: .
           push: true
           tags: ghcr.io/${{ env.LOWERCASE_OWNER }}/${{ env.IMAGE_NAME }}:latest
-          labels: ${{ steps.build_and_push.outputs.labels }}
 
       - name: Generate and Attach SLSA Provenance Attestation
         uses: actions/attest-build-provenance@v1
         with:
-          subject-name: ${{ env.LOWERCASE_OWNER }}/${{ env.IMAGE_NAME }}
+          subject-name: ghcr.io/${{ env.LOWERCASE_OWNER }}/${{ env.IMAGE_NAME }}
           subject-digest: ${{ steps.build_and_push.outputs.digest }}
           push-to-registry: true
 

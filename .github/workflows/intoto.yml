@@ -1,4 +1,4 @@
-name: Build, Sign, and Attest Container Image with in-toto
+name: in-toto
 
 on: [push, pull_request]
 

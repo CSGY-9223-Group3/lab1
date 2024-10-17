@@ -1,4 +1,4 @@
-name: CI Pipeline with in-toto Attestation
+name: in-toto-attestation
 
 on: [push, pull_request]
 

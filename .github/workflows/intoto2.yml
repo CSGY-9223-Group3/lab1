@@ -18,7 +18,7 @@ jobs:
       - name: Set Lowercase Variables
         run: |
           echo "LOWERCASE_OWNER=$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
-          echo "IMAGE_NAME=lab1" >> $GITHUB_ENV
+          echo "IMAGE_NAME=pastebin" >> $GITHUB_ENV
 
       - name: Set up Python
         uses: actions/setup-python@v4

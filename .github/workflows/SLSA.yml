@@ -36,24 +36,43 @@ jobs:
           push: true
           tags: ghcr.io/${{ env.LOWERCASE_OWNER }}/${{ env.IMAGE_NAME }}:latest
 
+      # Store the full image reference for later use
+      - name: Set Image Reference
+        run: |
+          echo "IMAGE_REF=ghcr.io/${{ env.LOWERCASE_OWNER }}/${{ env.IMAGE_NAME }}@${{ steps.build_and_push.outputs.digest }}" >> $GITHUB_ENV
+
       - name: Generate and Attach SLSA Provenance Attestation
         uses: actions/attest-build-provenance@v1
         with:
           subject-name: ghcr.io/${{ env.LOWERCASE_OWNER }}/${{ env.IMAGE_NAME }}
           subject-digest: ${{ steps.build_and_push.outputs.digest }}
           push-to-registry: true
-          github-token: ${{ secrets.GITHUB_TOKEN }}  # Explicitly set the token
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Install Cosign
         uses: sigstore/cosign-installer@v2.2.0
         with:
           cosign-release: 'v2.2.0'
 
+      # Add a small delay and verification step
+      - name: Wait and Verify Attestation
+        run: |
+          echo "Waiting for attestation to be available..."
+          sleep 15
+          echo "Verifying image reference: ${{ env.IMAGE_REF }}"
+          cosign verify-attestation --type slsaprovenance ${{ env.IMAGE_REF }} || true
+
       - name: Download Attestation
         env:
           COSIGN_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          cosign download attestation ghcr.io/${{ env.LOWERCASE_OWNER }}/${{ env.IMAGE_NAME }}@${{ steps.build_and_push.outputs.digest }} > attestation.jsonl
+          cosign download attestation --predicate-type slsaprovenance ${{ env.IMAGE_REF }} > attestation.jsonl
+          # Verify the file is not empty
+          if [ ! -s attestation.jsonl ]; then
+            echo "Error: attestation.jsonl is empty"
+            exit 1
+          fi
+          cat attestation.jsonl
 
       - name: Upload Attestation Artifact
         uses: actions/upload-artifact@v3

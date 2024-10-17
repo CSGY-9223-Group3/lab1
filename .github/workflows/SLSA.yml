@@ -54,25 +54,30 @@ jobs:
         with:
           cosign-release: 'v2.2.0'
 
-      # Add a small delay and verification step
       - name: Wait and Verify Attestation
         run: |
-          echo "Waiting for attestation to be available..."
-          sleep 15
-          echo "Verifying image reference: ${{ env.IMAGE_REF }}"
-          cosign verify-attestation --type slsaprovenance ${{ env.IMAGE_REF }} || true
+            echo "Waiting for attestation to be available..."
+            sleep 15
+            echo "Verifying image reference: ${{ env.IMAGE_REF }}"
+            cosign verify-attestation \
+              --type slsaprovenance \
+              --certificate-identity-regexp "https://github.com/CSGY-9223-Group3/.*" \
+              --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
+              ${{ env.IMAGE_REF }}
 
       - name: Download Attestation
         env:
           COSIGN_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          cosign download attestation --predicate-type slsaprovenance ${{ env.IMAGE_REF }} > attestation.jsonl
-          # Verify the file is not empty
-          if [ ! -s attestation.jsonl ]; then
-            echo "Error: attestation.jsonl is empty"
-            exit 1
-          fi
-          cat attestation.jsonl
+            cosign download attestation \
+                --predicate-type slsaprovenance \
+                ${{ env.IMAGE_REF }} > attestation.jsonl
+            # Verify the file is not empty
+            if [ ! -s attestation.jsonl ]; then
+                echo "Error: attestation.jsonl is empty"
+                exit 1
+            fi
+            cat attestation.jsonl
 
       - name: Upload Attestation Artifact
         uses: actions/upload-artifact@v3

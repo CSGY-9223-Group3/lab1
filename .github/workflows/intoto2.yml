@@ -40,6 +40,11 @@ jobs:
         run: |
           docker build -t ghcr.io/${{ env.LOWERCASE_OWNER }}/${{ env.IMAGE_NAME }}:latest .
 
+      - name: Push Docker Image
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.repository_owner }} --password-stdin
+          docker push ghcr.io/${{ env.LOWERCASE_OWNER }}/${{ env.IMAGE_NAME }}:latest
+
       - name: Generate SLSA Provenance Attestation
         run: |
           echo '{}' > predicate.json
@@ -49,13 +54,7 @@ jobs:
           COSIGN_EXPERIMENTAL: "true"
           COSIGN_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          COSIGN_EXPERIMENTAL=1 \
           cosign attest \
             --predicate predicate.json \
             --type https://in-toto.io/Statement/v0.1 \
             ghcr.io/${{ env.LOWERCASE_OWNER }}/${{ env.IMAGE_NAME }}:latest
-
-      - name: Push Docker Image
-        run: |
-          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.repository_owner }} --password-stdin
-          docker push ghcr.io/${{ env.LOWERCASE_OWNER }}/${{ env.IMAGE_NAME }}:latest

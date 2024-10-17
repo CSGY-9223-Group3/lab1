@@ -48,8 +48,8 @@ jobs:
         env:
           COSIGN_EXPERIMENTAL: "true"
         run: |
+          COSIGN_EXPERIMENTAL=1 \
           cosign attest \
-            --keyless \
             --predicate predicate.json \
             --type https://in-toto.io/Statement/v0.1 \
             ghcr.io/${{ github.repository_owner }}/${{ github.repository }}:latest

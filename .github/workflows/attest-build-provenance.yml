@@ -1,12 +1,8 @@
-name: Attest Build Provenance
+name: attest-build
 
 on:
   push:
-    branches:
-      - main
   pull_request:
-    branches:
-      - main
 
 jobs:
   attest-build:

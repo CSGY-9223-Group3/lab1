@@ -4,6 +4,7 @@ on: [push, pull_request]
 
 permissions:
   contents: read
+  issues: write
 
 jobs:
   build-and-scan:
@@ -32,7 +33,9 @@ jobs:
         with:
           target: 'http://localhost:5000'
           cmd_options: '-a'
-          # Additional options can be added here
+          fail_action: true
+          issue_title: 'ZAP Scan Results'
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload ZAP Report
         uses: actions/upload-artifact@v3

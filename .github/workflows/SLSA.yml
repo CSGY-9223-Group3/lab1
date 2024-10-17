@@ -9,7 +9,8 @@ jobs:
       contents: read
       packages: write
       id-token: write
-      actions: read      # Added this permission
+      actions: read
+      attestations: write
 
     steps:
       - name: Checkout Repository

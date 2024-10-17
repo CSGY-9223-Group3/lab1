@@ -57,4 +57,12 @@ jobs:
           cosign attest \
             --predicate predicate.json \
             --type https://in-toto.io/Statement/v0.1 \
-            ghcr.io/${{ env.LOWERCASE_OWNER }}/${{ env.IMAGE_NAME }}:latest
+            ghcr.io/${{ env.LOWERCASE_OWNER }}/${{ env.IMAGE_NAME }}:latest \
+            --output-file attestation.jsonl
+        
+      - name: Upload Attestation Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: attestation
+          path: attestation.jsonl
+        

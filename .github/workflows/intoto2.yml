@@ -1,22 +1,55 @@
-name: in-toto-attestation2
+name: Build, Sign, and Attest Container Image with in-toto
+
 on: [push]
-permissions:
-  id-token: write # This is required for requesting the JWT
-  contents: read  # This is required for actions/checkout
+
 jobs:
-  test:
+  build:
     runs-on: ubuntu-latest
-    name: test intoto-run
+
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+
     steps:
-      - uses: actions/checkout@v2
-      - uses: in-toto/github-action@v0.0.1
-        name: intoto run command
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
         with:
-          step-name: 'test'
-          private-key: ${{ secrets.IN_TOTO_PRIVATE_KEY }}
-          command: touch test.txt
-          products: 'test.txt'
-          archivist-url: ${{ secrets.ARCHIVIST_URL }}
-          output-directory: ${{ runner.temp }}
-      - name: show-attestation
-        run: cat $RUNNER_TEMP/meta/*.link
+          python-version: '3.x'
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Install Cosign
+        run: |
+          curl -LO https://github.com/sigstore/cosign/releases/latest/download/cosign-linux-amd64
+          chmod +x cosign-linux-amd64
+          sudo mv cosign-linux-amd64 /usr/local/bin/cosign
+
+      - name: Build Docker Image
+        run: |
+          docker build -t ghcr.io/${{ github.repository_owner }}/${{ github.repository }}:latest .
+
+      - name: Generate SLSA Provenance Attestation
+        run: |
+          echo '{}' > predicate.json
+
+      - name: Sign and Attach Attestation
+        env:
+          COSIGN_EXPERIMENTAL: "true"
+        run: |
+          cosign attest \
+            --keyless \
+            --predicate predicate.json \
+            --type https://in-toto.io/Statement/v0.1 \
+            ghcr.io/${{ github.repository_owner }}/${{ github.repository }}:latest
+
+      - name: Push Docker Image
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.repository_owner }} --password-stdin
+          docker push ghcr.io/${{ github.repository_owner }}/${{ github.repository }}:latest

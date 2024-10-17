@@ -1,4 +1,4 @@
 #!/bin/bash
 
-docker build -t pastebin:latest .
-docker save pastebin:latest -o docker-image.tar
+sudo docker build -t pastebin:latest .
+sudo docker save pastebin:latest -o docker-image.tar

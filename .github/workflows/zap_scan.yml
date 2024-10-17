@@ -1,32 +1,39 @@
-name: ZAP Scan
+name: zap_scan
 
-on:
-  push:
-    branches:
-      - develop
-  pull_request:
-    branches:
-      - develop
+on: [push, pull_request]
+
+permissions:
+  contents: read
 
 jobs:
-  zap_scan:
+  build-and-scan:
     runs-on: ubuntu-latest
-    
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+    timeout-minutes: 60
 
-      - name: Set up ZAP
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+
+      - name: Install Dependencies
         run: |
-          sudo apt-get update
-          sudo apt-get install -y zaproxy
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Start Application
+        run: |
+          nohup python pastebin.py &
+          sleep 10  # Wait for the app to start
 
       - name: ZAP Scan
         uses: zaproxy/action-full-scan@v0.4.0
         with:
           target: 'http://localhost:5000'
           cmd_options: '-a'
-  
+          # Additional options can be added here
+
       - name: Upload ZAP Report
         uses: actions/upload-artifact@v3
         with:

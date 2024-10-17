@@ -28,8 +28,7 @@ jobs:
 
       - name: Build with in-toto Attestation
         run: |
-          in-toto-run --step-name build --products docker-image.tar --signing-key ci-builder.key -- \ 
-          bash -c "docker build -t pastebin:latest . && docker save pastebin:latest -o docker-image.tar"
+          in-toto-run --step-name build --materials . --products docker-image.tar --signing-key ci-builder.key -- bash -c "docker build -t pastebin:latest . && docker save pastebin:latest -o docker-image.tar"
 
       - name: Upload Build Artifacts and Attestation
         uses: actions/upload-artifact@v3

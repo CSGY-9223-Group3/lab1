@@ -1,3 +1,4 @@
+name: in-toto-attestation2
 
 on: [push]
 permissions:

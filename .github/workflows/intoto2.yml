@@ -52,9 +52,9 @@ jobs:
           cosign attest \
             --predicate predicate.json \
             --type https://in-toto.io/Statement/v0.1 \
-            ghcr.io/${{ env.LOWERCASE_OWNER }}/${{ env.IMAGE_NAME }}:latest
+            ghcr.io/${{ env.LOWERCASE_OWNER }}/${{ env.IMAGE_NAME }}:latest .
 
       - name: Push Docker Image
         run: |
           echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.repository_owner }} --password-stdin
-          docker push ghcr.io/${{ env.LOWERCASE_OWNER }}/${{ env.IMAGE_NAME }}:latest
+          docker push ghcr.io/${{ env.LOWERCASE_OWNER }}/${{ env.IMAGE_NAME }}:latest .

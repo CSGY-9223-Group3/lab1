@@ -1,6 +1,6 @@
 name: Build, Sign, and Attest Container Image with in-toto
 
-on: [push]
+on: [push, pull_request]
 
 jobs:
   build:

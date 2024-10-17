@@ -33,7 +33,7 @@ jobs:
         # Example: echo "Build provenance for commit $GITHUB_SHA" > build_provenance.txt
 
     - name: Upload build provenance
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: build-provenance
         path: build_provenance.txt

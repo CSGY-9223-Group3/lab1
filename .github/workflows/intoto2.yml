@@ -47,6 +47,7 @@ jobs:
       - name: Sign and Attach Attestation
         env:
           COSIGN_EXPERIMENTAL: "true"
+          COSIGN_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           COSIGN_EXPERIMENTAL=1 \
           cosign attest \

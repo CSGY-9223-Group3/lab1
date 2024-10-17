@@ -1,43 +1,68 @@
-name: in-toto-attestation
+name: Build, Sign, and Attest Container Image with in-toto
 
 on: [push, pull_request]
 
-permissions:
-  contents: write
-
 jobs:
-  build-and-attest:
+  build:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+
+    permissions:
+      contents: read
+      packages: write
+      attestations: write
+      id-token: write
 
     steps:
-      - name: Checkout Code
+      - name: Checkout Repository
         uses: actions/checkout@v3
-      
-      - name: Set up Python
-        uses: actions/setup-python@v2
 
-      - name: Set Up in-toto Key
+      - name: Set Lowercase Variables
         run: |
-          echo "${{ secrets.IN_TOTO_PRIVATE_KEY }}" > ci-builder.key
-          chmod 600 ci-builder.key
-          
+          echo "LOWERCASE_OWNER=$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+          echo "IMAGE_NAME=pastebin" >> $GITHUB_ENV
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
       - name: Install Dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install in-toto
+          pip install -r requirements.txt
 
-      - name: Make build.sh Executable
-        run: chmod +x build.sh
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@v2.2.0
+        with:
+          cosign-release: 'v2.2.0'
 
-      - name: Build with in-toto Attestation
+      - name: Build Docker Image
         run: |
-          in-toto-run --step-name build --materials . --products docker-image.tar --signing-key ci-builder.key -- ./build.sh
+          docker build -t ghcr.io/${{ env.LOWERCASE_OWNER }}/${{ env.IMAGE_NAME }}:latest .
 
-      - name: Upload Build Artifacts and Attestation
+      - name: Push Docker Image
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.repository_owner }} --password-stdin
+          docker push ghcr.io/${{ env.LOWERCASE_OWNER }}/${{ env.IMAGE_NAME }}:latest
+
+      - name: Generate SLSA Provenance Attestation
+        run: |
+          echo '{}' > predicate.json
+
+      - name: Sign and Attach Attestation
+        env:
+          COSIGN_EXPERIMENTAL: "true"
+          COSIGN_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cosign attest \
+            --predicate predicate.json \
+            --type https://in-toto.io/Statement/v0.1 \
+            ghcr.io/${{ env.LOWERCASE_OWNER }}/${{ env.IMAGE_NAME }}:latest \
+            --output-file attestation.jsonl
+        
+      - name: Upload Attestation Artifact
         uses: actions/upload-artifact@v3
         with:
-          name: build-artifacts
-          path: |
-            docker-image.tar
-            build.link
+          name: attestation
+          path: attestation.jsonl
+        

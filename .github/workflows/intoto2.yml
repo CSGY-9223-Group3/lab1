@@ -1,5 +1,4 @@
 name: in-toto-attestation2
-
 on: [push]
 permissions:
   id-token: write # This is required for requesting the JWT
@@ -10,15 +9,14 @@ jobs:
     name: test intoto-run
     steps:
       - uses: actions/checkout@v2
-      - uses: testifysec/intoto-run-action@main
+      - uses: in-toto/github-action@v0.0.1
         name: intoto run command
         with:
           step-name: 'test'
           private-key: ${{ secrets.IN_TOTO_PRIVATE_KEY }}
           command: touch test.txt
           products: 'test.txt'
-          exclude: "node_modules/"
-          archivist-url: 'https://example.com/archivist'
-          output-directory: '/path/to/output'
+          archivist-url: ${{ secrets.ARCHIVIST_URL }}
+          output-directory: ${{ runner.temp }}
       - name: show-attestation
         run: cat $RUNNER_TEMP/meta/*.link

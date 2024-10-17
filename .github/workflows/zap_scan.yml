@@ -1,0 +1,40 @@
+name: ZAP Scan
+
+on:
+  push:
+    branches:
+      - develop
+  pull_request:
+    branches:
+      - develop
+
+jobs:
+  zap_scan:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up ZAP
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y zaproxy
+
+      - name: Run ZAP scan
+        run: |
+          zaproxy -daemon -port 8080 -config api.disablekey=true
+          zap-cli start
+          zap-cli open-url http://localhost:8000
+          zap-cli active-scan http://localhost:8000
+
+      - name: Report ZAP results
+        run: |
+          zap-cli report -o zap_report.html -f html
+        continue-on-error: true
+
+      - name: Upload ZAP report
+        uses: actions/upload-artifact@v3
+        with:
+          name: zap-report
+          path: zap_report.html

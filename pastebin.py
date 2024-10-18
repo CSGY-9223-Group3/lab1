@@ -21,6 +21,8 @@ from flask_wtf import FlaskForm
 from html_sanitizer import Sanitizer
 from wtforms import StringField, TextAreaField, BooleanField, SubmitField, PasswordField
 from wtforms.validators import DataRequired, Length, ValidationError
+from flask_sslify import SSLify
+
 
 # Configure logging
 dictConfig(
@@ -57,6 +59,7 @@ if not SECRET_KEY:
 sanitizer = Sanitizer()
 
 app = Flask(__name__)
+sslify = SSLify(app)
 app.config["SECRET_KEY"] = SECRET_KEY
 app.config["WTF_CSRF_TIME_LIMIT"] = None  # Disable CSRF token expiration for simplicity
 

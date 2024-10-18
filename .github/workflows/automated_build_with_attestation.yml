@@ -74,13 +74,14 @@ jobs:
         with:
           image: ghcr.io/${{ env.LOWERCASE_OWNER }}/${{ env.IMAGE_NAME }}:latest
           artifact-name: sbom.json
+          output-file: '/tmp/sbom-action/'
 
       - name: Generate SBOM attestation
         uses: actions/attest-sbom@v1
         with:
           subject-name: ghcr.io/${{ env.LOWERCASE_OWNER }}/${{ env.IMAGE_NAME }}
           subject-digest: ${{ steps.build_push_image.outputs.digest }}
-          sbom-path: 'sbom.json'
+          sbom-path: '/tmp/sbom-action/sbom.json'
           push-to-registry: true
 
       - name: Generate Attestation Predicate

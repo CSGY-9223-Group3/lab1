@@ -27,7 +27,10 @@ jobs:
 
       - name: Set container tag
         run: |
-          if [ ${{ github.head_ref || github.ref_name }} == 'main' ]; then echo "IMAGE_TAG=$(echo 'latest'); else echo "IMAGE_TAG=$(echo '${{ github.head_ref || github.ref_name }}'); fi >> $GITHUB_ENV
+          if [ '${{ github.head_ref || github.ref_name }}' == 'main' ]; then imageTag=$(echo 'latest'); else imageTag=$(echo '${{ github.head_ref || github.ref_name }}'); fi
+          echo "IMAGE_TAG=$imageTag" >> $GITHUB_OUTPUT
+
+        id: set_container_tag
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -55,7 +58,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           push: true
-          tags: ghcr.io/${{ env.LOWERCASE_OWNER }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+          tags: ghcr.io/${{ env.LOWERCASE_OWNER }}/${{ env.IMAGE_NAME }}:${{ steps.set_container_tag.outputs.IMAGE_TAG }}
         id: build_push_image
 
       - name: Generate SLSA Provenance Attestation
@@ -68,14 +71,14 @@ jobs:
       - name: Generate SBOM File
         uses: anchore/sbom-action@v0
         with:
-          image: ghcr.io/${{ env.LOWERCASE_OWNER }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+          image: ghcr.io/${{ env.LOWERCASE_OWNER }}/${{ env.IMAGE_NAME }}:${{ steps.set_container_tag.outputs.IMAGE_TAG }}
           artifact-name: sbom.json
           output-file: ./sbom.json
 
       - name: Generate SBOM attestation
         uses: actions/attest-sbom@v1
         with:
-          subject-name: ghcr.io/${{ env.LOWERCASE_OWNER }}/${{ env.IMAGE_NAME }}
+          subject-name: ghcr.io/${{ env.LOWERCASE_OWNER }}/${{ steps.set_container_tag.outputs.IMAGE_TAG }}
           subject-digest: ${{ steps.build_push_image.outputs.digest }}
           sbom-path: './sbom.json'
           push-to-registry: true
@@ -99,7 +102,7 @@ jobs:
           COSIGN_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           cosign download attestation \
-            ghcr.io/${{ env.LOWERCASE_OWNER }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }} > attestation.jsonl
+            ghcr.io/${{ env.LOWERCASE_OWNER }}/${{ env.IMAGE_NAME }}:${{ steps.set_container_tag.outputs.IMAGE_TAG }} > attestation.jsonl
 
       - name: Upload Attestation Artifact
         uses: actions/upload-artifact@v4

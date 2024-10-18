@@ -31,6 +31,7 @@ jobs:
   
   security:
     name: security
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
 
     permissions:
@@ -38,6 +39,9 @@ jobs:
     timeout-minutes: 5
 
     steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        # Dependency Review action only works on pull requests
       - name: Dependency Review
         uses: actions/dependency-review-action@v3
       - name: Upload Artifacts
@@ -51,6 +55,106 @@ jobs:
 
   build-attestation:
     name: build-attestation
+    if: github.event_name != 'pull_request'
+    needs: test-cases
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+      attestations: write
+      id-token: write
+
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set Lowercase Variables
+        run: |
+          echo "LOWERCASE_OWNER=$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+          echo "IMAGE_NAME=pastebin" >> $GITHUB_ENV
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@v2.2.0
+        with:
+          cosign-release: 'v2.2.0'
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and Push Image
+        uses: docker/build-push-action@v6
+        with:
+          push: true
+          tags: ghcr.io/${{ env.LOWERCASE_OWNER }}/${{ env.IMAGE_NAME }}:latest
+        id: build_push_image
+
+      - name: Generate SLSA Provenance Attestation
+        uses: actions/attest-build-provenance@v1
+        with:
+          subject-name: ghcr.io/${{ env.LOWERCASE_OWNER }}/${{ env.IMAGE_NAME }}
+          subject-digest: ${{ steps.build_push_image.outputs.digest }}
+          push-to-registry: true
+
+      - name: Generate SBOM File
+        uses: anchore/sbom-action@v0
+        with:
+          image: ghcr.io/${{ env.LOWERCASE_OWNER }}/${{ env.IMAGE_NAME }}:latest
+          artifact-name: sbom.json
+          output-file: ./sbom.json
+
+      - name: Generate SBOM attestation
+        uses: actions/attest-sbom@v1
+        with:
+          subject-name: ghcr.io/${{ env.LOWERCASE_OWNER }}/${{ env.IMAGE_NAME }}
+          subject-digest: ${{ steps.build_push_image.outputs.digest }}
+          sbom-path: './sbom.json'
+          push-to-registry: true
+
+      - name: Generate Attestation Predicate
+        run: |
+          echo '{}' > predicate.json
+
+      - name: Sign and Attach Attestation
+        env:
+          COSIGN_EXPERIMENTAL: "true"
+          COSIGN_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cosign attest \
+            --predicate predicate.json \
+            --type https://in-toto.io/Statement/v0.1 \
+            ghcr.io/${{ env.LOWERCASE_OWNER }}/${{ env.IMAGE_NAME }}@${{ steps.build_push_image.outputs.digest }}
+
+      - name: Download Attestation
+        env:
+          COSIGN_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cosign download attestation \
+            ghcr.io/${{ env.LOWERCASE_OWNER }}/${{ env.IMAGE_NAME }}:latest > attestation.jsonl
+
+      - name: Upload Attestation Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: attestation
+          path: attestation.jsonl
+
+    if: github.event_name == 'pull_request'
     needs: [test-cases, security]
     runs-on: ubuntu-latest
 

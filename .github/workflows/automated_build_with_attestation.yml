@@ -53,8 +53,8 @@ jobs:
             full_scan_report.html
             results.sarif
 
-  build-attestation:
-    name: build-attestation
+  build-attestation-non-pr:
+    name: build-attestation-non-pr
     if: github.event_name != 'pull_request'
     needs: test-cases
     runs-on: ubuntu-latest
@@ -154,6 +154,8 @@ jobs:
           name: attestation
           path: attestation.jsonl
 
+  build-attestation-pr:
+    name: build-attestation-pr
     if: github.event_name == 'pull_request'
     needs: [test-cases, security]
     runs-on: ubuntu-latest

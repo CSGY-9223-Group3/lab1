@@ -74,7 +74,7 @@ jobs:
         with:
           image: ghcr.io/${{ env.LOWERCASE_OWNER }}/${{ env.IMAGE_NAME }}:latest
           artifact-name: sbom.json
-          output-file: './'
+          output-file: ./
 
       - name: Generate SBOM attestation
         uses: actions/attest-sbom@v1

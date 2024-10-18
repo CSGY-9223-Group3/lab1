@@ -27,7 +27,7 @@ jobs:
 
       - name: Set container tag
         run: |
-          if [ ${{ github.head_ref || github.ref_name }} == 'main']; then echo "IMAGE_TAG=$(echo 'latest'); else echo "IMAGE_TAG=$(echo '${{ github.head_ref || github.ref_name }}'); fi
+          if [ ${{ github.head_ref || github.ref_name }} == 'main' ]; then echo "IMAGE_TAG=$(echo 'latest'); else echo "IMAGE_TAG=$(echo '${{ github.head_ref || github.ref_name }}'); fi >> $GITHUB_ENV
 
       - name: Set up Python
         uses: actions/setup-python@v5

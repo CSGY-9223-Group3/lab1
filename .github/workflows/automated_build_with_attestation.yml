@@ -69,24 +69,19 @@ jobs:
           subject-digest: ${{ steps.build_push_image.outputs.digest }}
           push-to-registry: true
 
-      - name: Create SBOM directory
-        run: |
-          mkdir -p /tmp/sbom
-          chmod 777 /tmp/sbom
-
       - name: Generate SBOM File
         uses: anchore/sbom-action@v0
         with:
           image: ghcr.io/${{ env.LOWERCASE_OWNER }}/${{ env.IMAGE_NAME }}:latest
           artifact-name: sbom.json
-          output-file: /tmp/sbom
+          output-file: .
 
       - name: Generate SBOM attestation
         uses: actions/attest-sbom@v1
         with:
           subject-name: ghcr.io/${{ env.LOWERCASE_OWNER }}/${{ env.IMAGE_NAME }}
           subject-digest: ${{ steps.build_push_image.outputs.digest }}
-          sbom-path: '/tmp/sbom/sbom.json'
+          sbom-path: './sbom.json'
           push-to-registry: true
 
       - name: Generate Attestation Predicate

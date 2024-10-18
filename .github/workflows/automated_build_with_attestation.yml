@@ -3,7 +3,8 @@ name: automated_build_with_attestation
 on: [push, pull_request]
 
 jobs:
-  test:
+  test-cases:
+    name: test-cases
     runs-on: ubuntu-latest
 
     permissions:
@@ -16,7 +17,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.9'
 
@@ -27,8 +28,30 @@ jobs:
 
       - name: Run tests
         run: pytest
+  
+  security:
+    name: security
+    runs-on: ubuntu-latest
 
-  build-attest:
+    permissions:
+      contents: read
+    timeout-minutes: 5
+
+    steps:
+      - name: Dependency Review
+        uses: actions/dependency-review-action@v3
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-artifacts
+          path: |
+            attestation.jsonl
+            full_scan_report.html
+            results.sarif
+
+  build-attestation:
+    name: build-attestation
+    needs: [test-cases, security]
     runs-on: ubuntu-latest
 
     permissions:
@@ -121,7 +144,7 @@ jobs:
             ghcr.io/${{ env.LOWERCASE_OWNER }}/${{ env.IMAGE_NAME }}:latest > attestation.jsonl
 
       - name: Upload Attestation Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: attestation
           path: attestation.jsonl

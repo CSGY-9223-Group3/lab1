@@ -22,6 +22,7 @@ from html_sanitizer import Sanitizer
 from wtforms import StringField, TextAreaField, BooleanField, SubmitField, PasswordField
 from wtforms.validators import DataRequired, Length, ValidationError
 
+
 # Configure logging
 dictConfig(
     {

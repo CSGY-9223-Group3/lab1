@@ -161,3 +161,6 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 .idea/
 .env_file
+entrypoint.sh.bak
+docker-compose.yml.bak
+Dockerfile.bak

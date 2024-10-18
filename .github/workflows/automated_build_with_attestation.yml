@@ -21,7 +21,7 @@ jobs:
       - name: Set Lowercase Variables
         run: |
           echo "LOWERCASE_OWNER=$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
-          echo "IMAGE_NAME=lab1" >> $GITHUB_ENV
+          echo "IMAGE_NAME=pastebin" >> $GITHUB_ENV
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -38,21 +38,35 @@ jobs:
         with:
           cosign-release: 'v2.2.0'
 
-      - name: Build Docker Image
-        run: |
-          docker build -t ghcr.io/${{ env.LOWERCASE_OWNER }}/${{ env.IMAGE_NAME }}:latest .
+      # - name: Build Docker Image
+      #   run: |
+      #     docker build -t ghcr.io/${{ env.LOWERCASE_OWNER }}/${{ env.IMAGE_NAME }}:latest .
 
-      - name: Push Docker Image
-        run: |
-          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.repository_owner }} --password-stdin
-          docker push ghcr.io/${{ env.LOWERCASE_OWNER }}/${{ env.IMAGE_NAME }}:latest
-        id: push_docker_image
+      # - name: Push Docker Image
+      #   run: |
+      #     echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.repository_owner }} --password-stdin
+      #     docker push ghcr.io/${{ env.LOWERCASE_OWNER }}/${{ env.IMAGE_NAME }}:latest
+      #   id: push_docker_image
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          push: true
+          tags: ghcr.io/${{ env.LOWERCASE_OWNER }}/${{ env.IMAGE_NAME }}:latest
+        id: build_push_image
 
       - name: Generate SLSA Provenance Attestation
         uses: actions/attest-build-provenance@v1
         with:
           subject-name: ghcr.io/${{ env.LOWERCASE_OWNER }}/${{ env.IMAGE_NAME }}
-          subject-digest: ${{ steps.push_docker_image.outputs.digest }}
+          subject-digest: ${{ steps.build_push_image.outputs.digest }}
           push-to-registry: true
 
       - name: Generate Attestation Predicate

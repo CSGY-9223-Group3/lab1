@@ -4,10 +4,8 @@ on: [push, pull_request]
 
 jobs:
   
-
   build-attestation:
     name: build-attestation
-    needs: dependency-security
     runs-on: ubuntu-latest
 
     permissions:

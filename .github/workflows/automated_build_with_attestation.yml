@@ -72,7 +72,7 @@ jobs:
       - name: Create SBOM directory
         run: |
           mkdir -p /tmp/sbom
-          chmod 600 /tmp/sbom
+          chmod 777 /tmp/sbom
 
       - name: Generate SBOM File
         uses: anchore/sbom-action@v0

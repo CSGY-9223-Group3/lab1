@@ -55,7 +55,7 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push
+      - name: Build and Push Image
         uses: docker/build-push-action@v6
         with:
           push: true
@@ -81,7 +81,7 @@ jobs:
           cosign attest \
             --predicate predicate.json \
             --type https://in-toto.io/Statement/v0.1 \
-            ghcr.io/${{ env.LOWERCASE_OWNER }}/${{ env.IMAGE_NAME }}@${{ steps.push_docker_image.outputs.digest }}
+            ghcr.io/${{ env.LOWERCASE_OWNER }}/${{ env.IMAGE_NAME }}@${{ steps.build_push_image.outputs.digest }}
 
       - name: Download Attestation
         env:

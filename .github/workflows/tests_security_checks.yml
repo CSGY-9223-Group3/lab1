@@ -29,22 +29,6 @@ jobs:
       - name: Run tests
         run: pytest
   
-  security:
-    name: security
-    if: github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
-
-    permissions:
-      contents: read
-    timeout-minutes: 5
-
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-        # Dependency Review action only works on pull requests
-      - name: Dependency Review
-        uses: actions/dependency-review-action@v4
-  
   black_lint:
     name: black_lint
     runs-on: ubuntu-latest

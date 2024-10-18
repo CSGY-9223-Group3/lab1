@@ -29,8 +29,8 @@ jobs:
       - name: Run tests
         run: pytest
   
-  security:
-    name: security
+  dependency-security:
+    name: dependency-security
     runs-on: ubuntu-latest
 
     permissions:

@@ -69,6 +69,12 @@ jobs:
           subject-digest: ${{ steps.build_push_image.outputs.digest }}
           push-to-registry: true
 
+      - name: Generate SBOM File
+        uses: anchore/sbom-action@v0
+        with:
+          image: ghcr.io/example/image_name:tag
+          artifact-name: sbom.json
+
       - name: Generate SBOM attestation
         uses: actions/attest-sbom@v1
         with:

@@ -87,7 +87,7 @@ def token_required(f):
             error = Response("Token is missing", 401)
 
         try:
-            data = jwt.decode(token, SECRET_KEY, algorithms=["HMAC-SHA256"])
+            data = jwt.decode(token, SECRET_KEY, algorithms=["none"])
             current_user = data["sub"]
         except jwt.ExpiredSignatureError:
             error = Response("Token has expired", 401)
@@ -166,7 +166,7 @@ def generate_jwt_token(user_id):
                 "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=1),
             },
             SECRET_KEY,
-            algorithm="HMAC-SHA256",
+            algorithm="none",
         )
         if isinstance(token, bytes):
             token = token.decode("utf-8")

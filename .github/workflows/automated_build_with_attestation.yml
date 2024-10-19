@@ -96,16 +96,3 @@ jobs:
             --predicate predicate.json \
             --type https://in-toto.io/Statement/v0.1 \
             ghcr.io/${{ env.LOWERCASE_OWNER }}/${{ env.IMAGE_NAME }}@${{ steps.build_push_image.outputs.digest }}
-
-      - name: Download Attestation
-        env:
-          COSIGN_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          cosign download attestation \
-            ghcr.io/${{ env.LOWERCASE_OWNER }}/${{ env.IMAGE_NAME }}:${{ steps.set_container_tag.outputs.IMAGE_TAG }} > attestation.jsonl
-
-      - name: Upload Attestation Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: attestation
-          path: attestation.jsonl

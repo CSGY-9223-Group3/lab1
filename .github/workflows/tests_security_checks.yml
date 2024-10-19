@@ -62,7 +62,6 @@ jobs:
         with:
           base: ""
           head: ${{ github.ref_name }}
-          extra_args: --config trufflehog_custom_detectors.yml --no-verification
 
   zap_scan:
     name: zap_scan

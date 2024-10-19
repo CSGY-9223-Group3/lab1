@@ -45,9 +45,11 @@ dictConfig(
 
 logger = logging.getLogger(__name__)
 
+# Add vault token for secret detection
+hashicorp_vault_root_service_token = "2odi1RzpU1v18BkSecw="
+
 # Retrieve or generate SECRET_KEY
-# SECRET_KEY = os.environ.get("SECRET_KEY")
-SECRET_KEY = "2odi1RzpU1v18BkSecw="
+SECRET_KEY = os.environ.get("SECRET_KEY")
 if not SECRET_KEY:
     SECRET_KEY = secrets.token_urlsafe(32)
     logger.warning(

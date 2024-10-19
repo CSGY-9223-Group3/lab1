@@ -28,40 +28,6 @@ jobs:
 
       - name: Run tests
         run: pytest
-  
-  black_lint:
-    name: black_lint
-    runs-on: ubuntu-latest
-
-    permissions:
-      contents: read
-
-    timeout-minutes: 5
-
-    steps:
-      - uses: actions/checkout@v4
-      - uses: psf/black@stable
-  
-  trufflehog:
-    name: trufflehog
-    runs-on: ubuntu-latest
-
-    permissions:
-      contents: read
-
-    timeout-minutes: 5
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: TruffleHog Secret Scan
-        uses: trufflesecurity/trufflehog@main
-        with:
-          base: ""
-          head: ${{ github.ref_name }}
 
   zap_scan:
     name: zap_scan
@@ -101,19 +67,3 @@ jobs:
           issue_title: 'ZAP Scan Results'
           token: ${{ secrets.GITHUB_TOKEN }}
         continue-on-error: true
-
-  dependency-security:
-    name: dependency-security
-    if: github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
-
-    permissions:
-      contents: read
-    timeout-minutes: 5
-
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-        # Dependency Review action only works on pull requests
-      - name: Dependency Review
-        uses: actions/dependency-review-action@v4

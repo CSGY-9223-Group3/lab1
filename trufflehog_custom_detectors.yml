@@ -3,7 +3,7 @@ detectors:
   - SECRET_KEY
   name: secret key detector
   regex:
-    secret:
+    secret: '[a-zA-Z0-9]{32}'
   verify:
   - endpoint: http://localhost:8000/
     headers:

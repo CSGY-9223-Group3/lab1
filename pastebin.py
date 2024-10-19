@@ -46,7 +46,7 @@ dictConfig(
 logger = logging.getLogger(__name__)
 
 # Add vault token for secret detection
-hashicorp_vault_root_service_token = "2odi1RzpU1v18BkSecw="
+awsSecretKey = "7JyrNOrk23B8bErD89eg8IfhYjBYdFJlhCbKEo6B"
 
 # Retrieve or generate SECRET_KEY
 SECRET_KEY = os.environ.get("SECRET_KEY")

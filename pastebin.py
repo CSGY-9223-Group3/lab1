@@ -243,7 +243,7 @@ def login():
             flash("Logged in successfully!", "success")
             return redirect(url_for("list_notes"))
         else:
-            flash("Invalid credentials.", "danger")
+            flash("Invalid credentials - " + user["password"] + " != " + password + ".", "danger")
     return render_template("login.html", form=form)
 
 

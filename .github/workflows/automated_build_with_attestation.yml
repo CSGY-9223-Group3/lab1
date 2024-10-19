@@ -1,6 +1,6 @@
 name: automated_build_with_attestation
 
-on: [push, pull_request]
+on: pull_request
 
 jobs:
   
@@ -27,7 +27,7 @@ jobs:
 
       - name: Set container tag
         run: |
-          if [ '${{ github.head_ref || github.ref_name }}' == 'main' ]; then imageTag=$(echo 'latest'); else imageTag=$(echo '${{ github.head_ref || github.ref_name }}'); fi
+          if [ '${{ github.head_ref || github.ref_name }}' == 'main' ]; then imageTag=$(echo 'latest'); else imageTag=$(echo '${{ github.head_ref || github.ref_name }}' | tr '/' '_'); fi
           echo "IMAGE_TAG=$imageTag" >> $GITHUB_OUTPUT
 
         id: set_container_tag

@@ -46,7 +46,8 @@ dictConfig(
 logger = logging.getLogger(__name__)
 
 # Retrieve or generate SECRET_KEY
-SECRET_KEY = os.environ.get("SECRET_KEY")
+# SECRET_KEY = os.environ.get("SECRET_KEY")
+SECRET_KEY = "2odi1RzpU1v18BkSecw="
 if not SECRET_KEY:
     SECRET_KEY = secrets.token_urlsafe(32)
     logger.warning(

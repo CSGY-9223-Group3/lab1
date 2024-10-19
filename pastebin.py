@@ -45,9 +45,6 @@ dictConfig(
 
 logger = logging.getLogger(__name__)
 
-# Add vault token for secret detection
-awsSecretKey = "7JyrNOrk23B8bErD89eg8IfhYjBYdFJlhCbKEo6B"
-
 # Retrieve or generate SECRET_KEY
 SECRET_KEY = os.environ.get("SECRET_KEY")
 if not SECRET_KEY:

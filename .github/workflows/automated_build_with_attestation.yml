@@ -1,6 +1,6 @@
 name: automated_build_with_attestation
 
-on: [push, pull_request]
+on: pull_request
 
 jobs:
   

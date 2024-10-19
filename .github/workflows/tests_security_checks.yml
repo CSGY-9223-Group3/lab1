@@ -28,6 +28,9 @@ jobs:
 
       - name: Run tests
         run: pytest
+
+      - name: trey
+        run: pip --version
   
   black_lint:
     name: black_lint

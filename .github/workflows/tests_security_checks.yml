@@ -133,6 +133,8 @@ jobs:
 
       - name: Run Trivy vulnerability scanner in repo mode
         uses: aquasecurity/trivy-action@0.28.0
+        env:
+          TRIVY_DB_REPOSITORY: "public.ecr.aws/aquasecurity/trivy-db:2"
         with:
           scan-type: 'fs'
           ignore-unfixed: true
@@ -166,6 +168,8 @@ jobs:
 
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@0.28.0
+        env:
+          TRIVY_DB_REPOSITORY: "public.ecr.aws/aquasecurity/trivy-db:2"
         with:
           image-ref: 'ghcr.io/${{ env.LOWERCASE_OWNER }}/${{ env.IMAGE_NAME }}:${{ github.sha }}'
           format: 'table'

@@ -125,6 +125,7 @@ jobs:
     permissions:
       contents: read
       security-events: write
+      packages: write
     timeout-minutes: 15
 
     steps:
@@ -163,7 +164,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           push: true
-          tags: ghcr.io/${{ env.LOWERCASE_OWNER }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+          tags: ghcr.io/${{ env.LOWERCASE_OWNER }}/${{ env.IMAGE_NAME }}:trivy_scan_${{ github.sha }}
         id: build_push_image
 
       - name: Run Trivy vulnerability scanner
@@ -171,7 +172,7 @@ jobs:
         env:
           TRIVY_DB_REPOSITORY: "public.ecr.aws/aquasecurity/trivy-db:2"
         with:
-          image-ref: 'ghcr.io/${{ env.LOWERCASE_OWNER }}/${{ env.IMAGE_NAME }}:${{ github.sha }}'
+          image-ref: 'ghcr.io/${{ env.LOWERCASE_OWNER }}/${{ env.IMAGE_NAME }}:trivy_scan_${{ github.sha }}'
           format: 'table'
           exit-code: '1'
           ignore-unfixed: true

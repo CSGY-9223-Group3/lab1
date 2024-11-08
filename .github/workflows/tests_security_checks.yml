@@ -139,16 +139,16 @@ jobs:
         with:
           scan-type: 'fs'
           ignore-unfixed: true
-          format: 'sarif'
-          output: 'trivy-results-repo-scan.sarif'
+          format: 'json'
+          output: 'trivy-results-repo-scan.json'
           severity: 'MEDIUM,HIGH,CRITICAL'
 
       - name: Upload Trivy Repo scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v3
+        uses: actions/upload-artifact@v4
         if: always()
         with:
-          sarif_file: 'trivy-results-repo-scan.sarif'
-          category: trivy-repo-scan
+          name: trivy-results-repo-scan
+          path: trivy-results-repo-scan.json
       
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
@@ -175,16 +175,16 @@ jobs:
           TRIVY_DB_REPOSITORY: "public.ecr.aws/aquasecurity/trivy-db:2"
         with:
           image-ref: 'ghcr.io/${{ env.LOWERCASE_OWNER }}/${{ env.IMAGE_NAME }}:trivy_scan_${{ github.sha }}'
-          format: 'sarif'
-          output: 'trivy-results-image-scan.sarif'
+          format: 'json'
+          output: 'trivy-results-image-scan.json'
           exit-code: '0'
           ignore-unfixed: true
           vuln-type: 'os,library'
           severity: 'MEDIUM,HIGH,CRITICAL'
-          skip-setup-trivy: true
 
       - name: Upload Trivy Image scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v3
+        uses: actions/upload-artifact@v4
+        if: always()
         with:
-          sarif_file: 'trivy-results-image-scan.sarif'
-          category: trivy-image-scan
+          name: trivy-results-image-scan
+          path: trivy-results-image-scan.json

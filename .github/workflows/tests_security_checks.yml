@@ -187,3 +187,48 @@ jobs:
         with:
           sarif_file: 'trivy-results-image-scan.sarif'
           category: trivy-image-scan
+
+  snyk_scan:
+    name: snyk_scan
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      security-events: write
+      packages: write      
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.9'
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run Snyk Vulnerability Scan
+        uses: snyk/actions@master
+        with:
+          args: test
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+
+      - name: Run Snyk License Compliance Scan
+        uses: snyk/actions@master
+        with:
+          args: test --fail-on=license
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+
+      # Upload Snyk Reports as Artifacts
+      - name: Upload Snyk Report
+        if: failure()
+        uses: actions/upload-artifact@v3
+        with:
+          name: snyk-report
+          path: snyk_report.json

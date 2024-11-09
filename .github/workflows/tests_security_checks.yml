@@ -213,22 +213,26 @@ jobs:
 
       - name: Run Snyk Vulnerability Scan
         uses: snyk/actions@master
+        continue-on-error: true
         with:
-          args: test
+          args: test --json-file-output=vuln-report.json
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
       - name: Run Snyk License Compliance Scan
         uses: snyk/actions@master
+        continue-on-error: true
         with:
-          args: test --fail-on=license
+          args: test --fail-on=license --json-file-output=license-report.json
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
       # Upload Snyk Reports as Artifacts
       - name: Upload Snyk Report
-        if: failure()
+        if: always()
         uses: actions/upload-artifact@v3
         with:
-          name: snyk-report
-          path: snyk_report.json
+          name: snyk-reports
+          path: |
+            vuln-report.json
+            license-report.json

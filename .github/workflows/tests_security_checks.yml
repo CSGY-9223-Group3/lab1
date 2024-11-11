@@ -227,7 +227,7 @@ jobs:
         uses: snyk/actions/python-3.9@master
         continue-on-error: true
         with:
-          args: test --json-file-output=vuln-report.json
+          json: true
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
@@ -246,5 +246,5 @@ jobs:
         with:
           name: snyk-reports
           path: |
-            vuln-report.json
+            snyk.json
             license-report.json

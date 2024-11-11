@@ -136,11 +136,13 @@ jobs:
         uses: aquasecurity/trivy-action@0.28.0
         env:
           TRIVY_DB_REPOSITORY: "public.ecr.aws/aquasecurity/trivy-db:2"
+        continue-on-error: true
         with:
           scan-type: 'fs'
           ignore-unfixed: true
           format: 'sarif'
           output: 'trivy-results-repo-scan.sarif'
+          exit-code: '1'
           severity: 'MEDIUM,HIGH,CRITICAL'
 
       - name: Upload Trivy Repo scan results to GitHub Security tab
@@ -173,11 +175,12 @@ jobs:
         uses: aquasecurity/trivy-action@0.28.0
         env:
           TRIVY_DB_REPOSITORY: "public.ecr.aws/aquasecurity/trivy-db:2"
+        continue-on-error: true
         with:
           image-ref: 'ghcr.io/${{ env.LOWERCASE_OWNER }}/${{ env.IMAGE_NAME }}:trivy_scan_${{ github.sha }}'
           format: 'sarif'
           output: 'trivy-results-image-scan.sarif'
-          exit-code: '0'
+          exit-code: '1'
           ignore-unfixed: true
           vuln-type: 'os,library'
           severity: 'MEDIUM,HIGH,CRITICAL'
@@ -216,14 +219,6 @@ jobs:
       #   continue-on-error: true
       #   with:
       #     args: test --json-file-output=vuln-report.json
-      #   env:
-      #     SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-
-      # - name: Run Snyk License Compliance Scan
-      #   uses: snyk/actions@master
-      #   continue-on-error: true
-      #   with:
-      #     args: test --fail-on=license --json-file-output=license-report.json
       #   env:
       #     SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 

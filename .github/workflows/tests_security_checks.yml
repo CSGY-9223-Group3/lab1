@@ -228,6 +228,7 @@ jobs:
         continue-on-error: true
         with:
           json: true
+          args: --json-file-output=vuln-report.json
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
@@ -246,5 +247,5 @@ jobs:
         with:
           name: snyk-reports
           path: |
-            snyk.json
+            vuln-report.json
             license-report.json

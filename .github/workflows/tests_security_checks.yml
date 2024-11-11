@@ -198,7 +198,8 @@ jobs:
     permissions:
       contents: read
       security-events: write
-      packages: write      
+      packages: write
+    timeout-minutes: 5
 
     steps:
       - name: Checkout code

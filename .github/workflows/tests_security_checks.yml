@@ -228,7 +228,6 @@ jobs:
         continue-on-error: true
         with:
           json: true
-          args: --json-file-output=vuln-report.json
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
@@ -243,9 +242,9 @@ jobs:
       # Upload Snyk Reports as Artifacts
       - name: Upload Snyk Report
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: snyk-reports
           path: |
-            vuln-report.json
+            snyk.json
             license-report.json

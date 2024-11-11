@@ -211,8 +211,24 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      # - name: Run Snyk Vulnerability Scan
+      #   uses: snyk/actions@master
+      #   continue-on-error: true
+      #   with:
+      #     args: test --json-file-output=vuln-report.json
+      #   env:
+      #     SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+
+      # - name: Run Snyk License Compliance Scan
+      #   uses: snyk/actions@master
+      #   continue-on-error: true
+      #   with:
+      #     args: test --fail-on=license --json-file-output=license-report.json
+      #   env:
+      #     SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+
       - name: Run Snyk Vulnerability Scan
-        uses: snyk/actions@master
+        uses: snyk/actions/python-3.9@master
         continue-on-error: true
         with:
           args: test --json-file-output=vuln-report.json

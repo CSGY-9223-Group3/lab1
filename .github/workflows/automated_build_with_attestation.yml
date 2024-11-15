@@ -94,7 +94,7 @@ jobs:
           COSIGN_EXPERIMENTAL: "true"
           COSIGN_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          cosign attest \
+          cosign attest --yes \
             --predicate predicate.json \
             --type https://in-toto.io/Statement/v0.1 \
             ghcr.io/${{ env.LOWERCASE_OWNER }}/${{ env.IMAGE_NAME }}@${{ steps.build_push_image.outputs.digest }}

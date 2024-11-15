@@ -227,15 +227,6 @@ jobs:
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
-      - name: Run Snyk License Compliance Scan
-        uses: snyk/actions@master
-        continue-on-error: true
-        with:
-          args: test --json-file-output=license-report.json
-          json: true
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-
       # Upload Snyk Reports as Artifacts
       - name: Upload Snyk Report
         if: always()
@@ -244,4 +235,3 @@ jobs:
           name: snyk-reports
           path: |
             snyk.json
-            license-report.json

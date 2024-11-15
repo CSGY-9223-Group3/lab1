@@ -69,11 +69,16 @@ If you prefer to run the application without Docker, follow these steps:
     ```sh
     .venv\Scripts\activate
     ```
+   
+3. **Install Pipenv dependency manager**
+    ```sh
+    pip install pipenv
+    ```
 
 4. **Install the Required Dependencies:**
 
     ```sh
-    pip install -r requirements.txt
+    pipenv install
     ```
 
 5. **Set Environment Variables from `.env_file`:**

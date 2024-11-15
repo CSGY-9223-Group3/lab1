@@ -137,10 +137,10 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Run Trivy vulnerability scanner in repo mode
-        uses: aquasecurity/trivy-action@0.28.0
+        uses: aquasecurity/trivy-action@master
+        continue-on-error: true
         env:
           TRIVY_DB_REPOSITORY: "public.ecr.aws/aquasecurity/trivy-db:2"
-        continue-on-error: true
         with:
           scan-type: 'fs'
           ignore-unfixed: true
@@ -152,6 +152,7 @@ jobs:
       - name: Upload Trivy Repo scan results to GitHub Security tab
         uses: github/codeql-action/upload-sarif@v3
         if: always()
+        continue-on-error: true
         with:
           sarif_file: 'trivy-results-repo-scan.sarif'
           category: trivy-repo-scan
@@ -176,10 +177,10 @@ jobs:
         id: build_push_image
 
       - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@0.28.0
+        uses: aquasecurity/trivy-action@master
+        continue-on-error: true
         env:
           TRIVY_DB_REPOSITORY: "public.ecr.aws/aquasecurity/trivy-db:2"
-        continue-on-error: true
         with:
           image-ref: 'ghcr.io/${{ env.LOWERCASE_OWNER }}/${{ env.IMAGE_NAME }}:trivy_scan_${{ github.sha }}'
           format: 'sarif'
@@ -191,6 +192,8 @@ jobs:
 
       - name: Upload Trivy Image scan results to GitHub Security tab
         uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        continue-on-error: true
         with:
           sarif_file: 'trivy-results-image-scan.sarif'
           category: trivy-image-scan

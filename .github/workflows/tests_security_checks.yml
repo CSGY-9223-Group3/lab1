@@ -232,6 +232,7 @@ jobs:
         continue-on-error: true
         with:
           args: test --json-file-output=license-report.json
+          json: true
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 

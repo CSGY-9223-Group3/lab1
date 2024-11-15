@@ -28,7 +28,7 @@ jobs:
           pipenv install
 
       - name: Run tests
-        run: pytest
+        run: pipenv run pytest
   
   black_lint:
     name: black_lint

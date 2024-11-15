@@ -31,7 +31,7 @@ python-dotenv = "==0.21.1"
 tomli = "==2.0.1"
 in-toto = "==3.0.0"
 typing-extensions = "==4.7.1"
-werkzeug = "3.0.3"
+werkzeug = "3.0.6"
 zipp = "3.19.1"
 
 [dev-packages]

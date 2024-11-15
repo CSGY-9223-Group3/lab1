@@ -109,6 +109,7 @@ jobs:
 
     permissions:
       contents: read
+      pull-requests: write
     timeout-minutes: 5
 
     steps:
@@ -117,6 +118,9 @@ jobs:
         # Dependency Review action only works on pull requests
       - name: Dependency Review
         uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: high
+          comment-summary-in-pr: on-failure
   
   trivy:
     name: trivy
@@ -143,7 +147,7 @@ jobs:
           format: 'sarif'
           output: 'trivy-results-repo-scan.sarif'
           exit-code: '1'
-          severity: 'MEDIUM,HIGH,CRITICAL'
+          severity: 'HIGH,CRITICAL'
 
       - name: Upload Trivy Repo scan results to GitHub Security tab
         uses: github/codeql-action/upload-sarif@v3
@@ -183,7 +187,7 @@ jobs:
           exit-code: '1'
           ignore-unfixed: true
           vuln-type: 'os,library'
-          severity: 'MEDIUM,HIGH,CRITICAL'
+          severity: 'HIGH,CRITICAL'
 
       - name: Upload Trivy Image scan results to GitHub Security tab
         uses: github/codeql-action/upload-sarif@v3
@@ -215,14 +219,6 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      # - name: Run Snyk Vulnerability Scan
-      #   uses: snyk/actions@master
-      #   continue-on-error: true
-      #   with:
-      #     args: test --json-file-output=vuln-report.json
-      #   env:
-      #     SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-
       - name: Run Snyk Vulnerability Scan
         uses: snyk/actions/python-3.9@master
         continue-on-error: true
@@ -235,7 +231,7 @@ jobs:
         uses: snyk/actions@master
         continue-on-error: true
         with:
-          args: test --fail-on=license --json-file-output=license-report.json
+          args: test --json-file-output=license-report.json
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 

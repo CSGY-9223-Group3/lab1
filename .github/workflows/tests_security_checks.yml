@@ -226,7 +226,8 @@ jobs:
         uses: snyk/actions/python-3.9@master
         continue-on-error: true
         with:
-          json: true
+          # json: true
+          args: --all-projects --sarif-file-output=snyk.sarif --json-file-output=snyk.json
           command: test
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
@@ -239,3 +240,11 @@ jobs:
           name: snyk-reports
           path: |
             snyk.json
+
+      # Upload Snyk SARIF to GitHub Security tab
+      - name: Upload Snyk SARIF to GitHub Security
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: snyk.sarif
+          category: snyk-python-scan

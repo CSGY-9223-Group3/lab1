@@ -4,10 +4,14 @@ FROM python:3.9-slim-buster AS builder
 # Create a non-root user for enhanced security
 RUN groupadd -r appuser && useradd -r -g appuser appuser
 
+# Install pipenv for dependency management
+RUN pip install --no-cache-dir pipenv
+
 # Set working directory and install dependencies
 WORKDIR /app
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+COPY Pipfile .
+COPY Pipfile.lock .
+RUN pipenv install --deploy
 
 # Stage 2: Final Image
 FROM python:3.9-slim-buster

@@ -24,10 +24,11 @@ jobs:
       - name: Install Dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          python -m pip install pipenv
+          pipenv install
 
       - name: Run tests
-        run: pytest
+        run: pipenv run pytest
   
   black_lint:
     name: black_lint
@@ -85,7 +86,8 @@ jobs:
       - name: Install Dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          python -m pip install pipenv
+          pipenv install
 
       - name: Start Application
         run: |
@@ -109,6 +111,7 @@ jobs:
 
     permissions:
       contents: read
+      pull-requests: write
     timeout-minutes: 5
 
     steps:
@@ -117,3 +120,134 @@ jobs:
         # Dependency Review action only works on pull requests
       - name: Dependency Review
         uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: high
+          comment-summary-in-pr: on-failure
+  
+  trivy:
+    name: trivy
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      security-events: write
+      packages: write
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Trivy vulnerability scanner in repo mode
+        uses: aquasecurity/trivy-action@master
+        continue-on-error: true
+        env:
+          TRIVY_DB_REPOSITORY: "public.ecr.aws/aquasecurity/trivy-db:2"
+        with:
+          scan-type: 'fs'
+          ignore-unfixed: true
+          format: 'sarif'
+          output: 'trivy-results-repo-scan.sarif'
+          exit-code: '1'
+          severity: 'HIGH,CRITICAL'
+
+      - name: Upload Trivy Repo scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        continue-on-error: true
+        with:
+          sarif_file: 'trivy-results-repo-scan.sarif'
+          category: trivy-repo-scan
+      
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set Lowercase Variables
+        run: |
+          echo "LOWERCASE_OWNER=$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+          echo "IMAGE_NAME=pastebin" >> $GITHUB_ENV
+
+      - name: Build and Push Image
+        uses: docker/build-push-action@v6
+        with:
+          push: true
+          tags: ghcr.io/${{ env.LOWERCASE_OWNER }}/${{ env.IMAGE_NAME }}:trivy_scan_${{ github.sha }}
+        id: build_push_image
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        continue-on-error: true
+        env:
+          TRIVY_DB_REPOSITORY: "public.ecr.aws/aquasecurity/trivy-db:2"
+        with:
+          image-ref: 'ghcr.io/${{ env.LOWERCASE_OWNER }}/${{ env.IMAGE_NAME }}:trivy_scan_${{ github.sha }}'
+          format: 'sarif'
+          output: 'trivy-results-image-scan.sarif'
+          exit-code: '1'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'HIGH,CRITICAL'
+
+      - name: Upload Trivy Image scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        continue-on-error: true
+        with:
+          sarif_file: 'trivy-results-image-scan.sarif'
+          category: trivy-image-scan
+
+  snyk_scan:
+    name: snyk_scan
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      security-events: write
+      packages: write
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.9'
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install pipenv
+          pipenv install
+
+      - name: Run Snyk Vulnerability Scan
+        uses: snyk/actions/python-3.9@master
+        continue-on-error: true
+        with:
+          # json: true
+          args: --all-projects --sarif-file-output=snyk.sarif --json-file-output=snyk.json
+          command: test
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+
+      # Upload Snyk Reports as Artifacts
+      - name: Upload Snyk Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: snyk-reports
+          path: |
+            snyk.json
+
+      # Upload Snyk SARIF to GitHub Security tab
+      - name: Upload Snyk SARIF to GitHub Security
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: snyk.sarif
+          category: snyk-python-scan

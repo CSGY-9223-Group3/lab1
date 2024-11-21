@@ -73,26 +73,31 @@ users = {}
 def token_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
+        errror = None
         token = None
+        current_user = "none"
         if "Authorization" in request.headers:
             auth_header = request.headers["Authorization"]
             try:
                 token = auth_header.split(" ")[1]
             except IndexError:
-                return Response("Invalid token format", 401)
+                error = Response("Invalid token format", 401)
 
         if not token:
-            return Response("Token is missing", 401)
+            error = Response("Token is missing", 401)
 
         try:
-            data = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+            data = jwt.decode(token, SECRET_KEY, algorithms=["none"])
             current_user = data["sub"]
         except jwt.ExpiredSignatureError:
-            return Response("Token has expired", 401)
+            error = Response("Token has expired", 401)
         except jwt.InvalidTokenError:
-            return Response("Invalid token", 401)
+            error = Response("Invalid token", 401)
 
-        return f(current_user, *args, **kwargs)
+        if errror:
+            return errror
+        else:
+            return f(current_user, *args, **kwargs)
 
     return decorated
 
@@ -161,7 +166,7 @@ def generate_jwt_token(user_id):
                 "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=1),
             },
             SECRET_KEY,
-            algorithm="HS256",
+            algorithm="none",
         )
         if isinstance(token, bytes):
             token = token.decode("utf-8")
@@ -238,7 +243,7 @@ def login():
             flash("Logged in successfully!", "success")
             return redirect(url_for("list_notes"))
         else:
-            flash("Invalid credentials.", "danger")
+            flash("Invalid credentials - " + user["password"] + " is not correct.", "danger")
     return render_template("login.html", form=form)
 
 

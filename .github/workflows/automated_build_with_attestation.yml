@@ -64,7 +64,7 @@ jobs:
         id: build_push_image
 
       - name: Generate SLSA Provenance Attestation
-        uses: actions/attest-build-provenance@v1
+        uses: actions/attest-build-provenance@v2
         with:
           subject-name: ghcr.io/${{ env.LOWERCASE_OWNER }}/${{ env.IMAGE_NAME }}
           subject-digest: ${{ steps.build_push_image.outputs.digest }}
